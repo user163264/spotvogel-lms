@@ -1,0 +1,89 @@
+.slate-editor-container {
+  margin-bottom: 1rem;
+}
+
+.slate-editor {
+  border: 1px solid #ced4da;
+  border-radius: 0.25rem;
+  background-color: #fff;
+  min-height: 200px;
+  display: flex;
+  flex-direction: column;
+}
+
+.slate-editor.is-invalid {
+  border-color: #dc3545;
+}
+
+.editor-toolbar {
+  display: flex;
+  padding: 0.5rem;
+  border-bottom: 1px solid #ced4da;
+  background-color: #f8f9fa;
+  border-top-left-radius: 0.25rem;
+  border-top-right-radius: 0.25rem;
+}
+
+.toolbar-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0.25rem 0.5rem;
+  margin-right: 0.25rem;
+  border-radius: 0.25rem;
+  font-weight: bold;
+}
+
+.toolbar-button:hover {
+  background-color: #e9ecef;
+}
+
+.toolbar-button.active {
+  background-color: #e9ecef;
+  color: #0d6efd;
+}
+
+.toolbar-divider {
+  width: 1px;
+  background-color: #ced4da;
+  margin: 0 0.5rem;
+}
+
+.editor-content {
+  padding: 0.75rem;
+  flex-grow: 1;
+  min-height: 150px;
+  overflow-y: auto;
+}
+
+/* Element Styles */
+.editor-content h1 {
+  font-size: 1.8rem;
+  margin-top: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.editor-content h2 {
+  font-size: 1.5rem;
+  margin-top: 0.4rem;
+  margin-bottom: 0.4rem;
+}
+
+.editor-content blockquote {
+  border-left: 2px solid #ced4da;
+  margin-left: 0;
+  padding-left: 10px;
+  color: #6c757d;
+  font-style: italic;
+}
+
+.editor-content ul,
+.editor-content ol {
+  padding-left: 2rem;
+  margin: 0.5rem 0;
+}
+
+.editor-content p {
+  margin: 0;
+  min-height: 1rem;
+}
