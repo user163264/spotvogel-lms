@@ -1,5 +1,7 @@
 # Setting Up OpenAI API for Your LMS System
 
+> **Note:** This system uses port 8080 for the backend server. Do not use port 5000 as it conflicts with the macOS AirPlay service on newer macOS versions.
+
 This guide will walk you through setting up the OpenAI API integration for the Teacher-Focused LMS system.
 
 ## 1. Get an OpenAI API Key

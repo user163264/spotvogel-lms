@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import MatchingWords from './improved/MatchingWordsOptimized'; // Import our optimized component
 import { useNavigate } from 'react-router-dom';
 import aiService from '../../services/aiService';
 
@@ -43,11 +44,21 @@ const ExerciseGenerator = () => {
     
     try {
       const result = await aiService.generateExercises(formData);
-      setGeneratedExercises(result.exercises);
-      setSuccess('Exercises generated successfully!');
+      
+      if (result && result.success && result.exercises && Array.isArray(result.exercises)) {
+        setGeneratedExercises(result.exercises);
+        setSuccess('Exercises generated successfully!');
+      } else {
+        // Handle malformed response
+        console.error('Malformed response from server:', result);
+        setError('Invalid response format from server');
+        setGeneratedExercises(null);
+      }
     } catch (err) {
       setError(err.response?.data?.message || 'Failed to generate exercises');
       console.error('Exercise generation error:', err);
+      // Reset the exercises to null to avoid rendering errors
+      setGeneratedExercises(null);
     } finally {
       setIsLoading(false);
     }
@@ -270,7 +281,7 @@ const ExerciseGenerator = () => {
           </div>
           
           <div className="exercise-preview">
-            {generatedExercises.map((exercise, index) => (
+            {generatedExercises && Array.isArray(generatedExercises) && generatedExercises.map((exercise, index) => (
               <div key={index} className="card mb-3">
                 <div className="card-header">
                   <strong>Exercise {index + 1}</strong>
@@ -291,17 +302,21 @@ const ExerciseGenerator = () => {
  * Render a preview of an exercise based on its type
  */
 const renderExercisePreview = (exercise, exerciseType) => {
+  if (!exercise) {
+    return <div className="alert alert-warning">Exercise data is missing or invalid</div>;
+  }
+  
   switch (exerciseType) {
     case 'multiple-choice':
       return (
         <div className="multiple-choice-preview">
-          <p><strong>Question:</strong> {exercise.question}</p>
+          <p><strong>Question:</strong> {exercise.question || 'No question provided'}</p>
           <ol type="A">
-            {exercise.options.map((option, idx) => (
+            {Array.isArray(exercise.options) ? exercise.options.map((option, idx) => (
               <li key={idx} className={idx === exercise.correctAnswer ? 'text-success font-weight-bold' : ''}>
                 {option} {idx === exercise.correctAnswer && '✓'}
               </li>
-            ))}
+            )) : <li>No options provided</li>}
           </ol>
         </div>
       );
@@ -324,51 +339,57 @@ const renderExercisePreview = (exercise, exerciseType) => {
       return (
         <div className="fill-in-blank-preview">
           <p><strong>Instructions:</strong> Fill in the blanks with the correct answers.</p>
-          <p>{exercise.text}</p>
+          <p>{exercise.text || 'No text provided'}</p>
           <div className="answers">
             <p><strong>Answers:</strong></p>
             <ol>
-              {exercise.answers.map((answer, idx) => (
+              {Array.isArray(exercise.answers) ? exercise.answers.map((answer, idx) => (
                 <li key={idx}>{answer}</li>
-              ))}
+              )) : <li>No answers provided</li>}
             </ol>
           </div>
         </div>
       );
       
     case 'matching':
+      // Convert legacy format to new format if needed
+      const matchingExercise = {
+        question: exercise.instructions || 'Match the items in the left column with the corresponding items in the right column.',
+        word_bank: Array.isArray(exercise.leftItems) ? exercise.leftItems : [],
+        match_options: Array.isArray(exercise.rightItems) ? exercise.rightItems : [],
+        correct_answer: {}
+      };
+      
+      // Handle legacy matches format
+      if (Array.isArray(exercise.matches)) {
+        exercise.matches.forEach(match => {
+          const leftItem = matchingExercise.word_bank[match[0]];
+          const rightItem = matchingExercise.match_options[match[1]];
+          if (leftItem && rightItem) {
+            matchingExercise.correct_answer[leftItem] = rightItem;
+          }
+        });
+      }
+      
+      // Handle new matching_words format
+      if (exercise.word_bank && exercise.match_options && exercise.correct_answer) {
+        // Use data directly from the new format
+        return (
+          <MatchingWords 
+            exercise={exercise} 
+            readOnly={true} 
+            showCorrectAnswers={true} 
+          />
+        );
+      }
+      
+      // Use converted data from old format
       return (
-        <div className="matching-preview">
-          <p><strong>Instructions:</strong> Match the items in the left column with the corresponding items in the right column.</p>
-          <div className="row">
-            <div className="col-5">
-              <h6>Left Items:</h6>
-              <ol>
-                {exercise.leftItems.map((item, idx) => (
-                  <li key={idx}>{item}</li>
-                ))}
-              </ol>
-            </div>
-            <div className="col-5">
-              <h6>Right Items:</h6>
-              <ol type="A">
-                {exercise.rightItems.map((item, idx) => (
-                  <li key={idx}>{item}</li>
-                ))}
-              </ol>
-            </div>
-          </div>
-          <div className="matches">
-            <p><strong>Correct Matches:</strong></p>
-            <ul>
-              {exercise.matches.map((match, idx) => (
-                <li key={idx}>
-                  {match[0] + 1} → {String.fromCharCode(65 + match[1])}
-                </li>
-              ))}
-            </ul>
-          </div>
-        </div>
+        <MatchingWords 
+          exercise={matchingExercise} 
+          readOnly={true} 
+          showCorrectAnswers={true} 
+        />
       );
       
     case 'true-false':

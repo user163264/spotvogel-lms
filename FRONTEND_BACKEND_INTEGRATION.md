@@ -13,7 +13,7 @@ Make sure your environment is properly set up:
 cd server
 cp .env.example .env
 # Edit .env to set proper variables:
-# - PORT=5000
+# - PORT=8080
 # - MONGODB_URI=<your_mongodb_connection_string>
 # - JWT_SECRET=<your_jwt_secret>
 # - OPENAI_API_KEY=<your_openai_api_key>
@@ -26,8 +26,8 @@ cd ../client
 # Create .env file if not exists
 touch .env
 # Add these variables:
-# REACT_APP_API_URL=http://localhost:5000/api
-# REACT_APP_SERVER_URL=http://localhost:5000
+# REACT_APP_API_URL=http://localhost:8080/api
+# REACT_APP_SERVER_URL=http://localhost:8080
 npm install
 ```
 
@@ -90,7 +90,7 @@ Follow these steps to verify the integration is working correctly:
 If you see CORS errors in the console:
 
 ```
-Access to XMLHttpRequest at 'http://localhost:5000/api/...' from origin 'http://localhost:3000' 
+Access to XMLHttpRequest at 'http://localhost:8080/api/...' from origin 'http://localhost:3000' 
 has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header...
 ```
 
@@ -141,6 +141,7 @@ For consistency, all API endpoints follow these conventions:
 - Error responses: `{ message: "Error description" }`
 - Success responses: Either the requested resource or `{ message: "Success message" }`
 - List endpoints support query parameters for filtering
+- MongoDB documents include both `_id` and `id` fields for compatibility (see [MONGODB_ID_HANDLING.md](MONGODB_ID_HANDLING.md))
 
 ## Service Abstraction
 

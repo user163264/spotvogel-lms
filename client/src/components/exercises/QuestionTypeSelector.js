@@ -30,6 +30,12 @@ const questionTypes = [
     label: 'Numeric Response',
     description: 'Students enter a numeric answer',
     icon: '🔢'
+  },
+  {
+    id: 'matching-words',
+    label: 'Matching Words',
+    description: 'Students match items from two columns',
+    icon: '🔀'
   }
 ];
 

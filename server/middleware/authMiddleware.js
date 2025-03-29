@@ -60,6 +60,9 @@ exports.requireJwt = async (req, res, next) => {
 
 // Optional authentication - allows both authenticated and unauthenticated access
 exports.optionalJwt = async (req, res, next) => {
+  console.log('Optional JWT authentication middleware running');
+  console.log('URL being accessed:', req.originalUrl);
+  console.log('Has authorization header:', req.headers.authorization ? 'Yes' : 'No');
   let token;
 
   // Check if authorization header exists and starts with Bearer

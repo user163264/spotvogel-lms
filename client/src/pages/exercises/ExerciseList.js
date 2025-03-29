@@ -163,44 +163,50 @@ const ExerciseList = () => {
         />
       ) : (
         <div className="exercise-grid">
-          {filteredExercises.map(exercise => (
-            <div key={exercise.id} className="card exercise-card">
+          {filteredExercises.map((exercise, index) => (
+            <div key={exercise?._id || exercise?.id || `exercise-fixed-${index}`} className="card exercise-card">
               <div className="card-body exercise-card-body">
-                <h3 className="card-title">{exercise.title}</h3>
-                <p className="mb-3">{exercise.description}</p>
+                <h3 className="card-title">{exercise?.title || 'Untitled Exercise'}</h3>
+                <p className="mb-3">{exercise?.description || 'No description available'}</p>
                 <div className="mb-3">
-                  <span className="badge bg-primary mr-2">{exercise.subject}</span>
-                  <span className="badge bg-secondary mr-2">{exercise.grade}</span>
-                  <span className="badge bg-info">{exercise.difficultyLevel}</span>
-                  {exercise.isPublished ? (
+                  {exercise?.subject && (
+                    <span className="badge bg-primary mr-2">{exercise.subject}</span>
+                  )}
+                  {exercise?.grade && (
+                    <span className="badge bg-secondary mr-2">{exercise.grade}</span>
+                  )}
+                  {exercise?.difficultyLevel && (
+                    <span className="badge bg-info">{exercise.difficultyLevel}</span>
+                  )}
+                  {exercise?.isPublished ? (
                     <span className="badge bg-success ml-2">Published</span>
                   ) : (
                     <span className="badge bg-secondary ml-2">Draft</span>
                   )}
-                  {exercise.aiGenerated && (
+                  {exercise?.aiGenerated && (
                     <span className="badge bg-warning ml-2">AI Generated</span>
                   )}
                 </div>
                 <p className="mb-2">
-                  <strong>Type:</strong> {getTypeLabel(exercise.type)}
+                  <strong>Type:</strong> {getTypeLabel(exercise?.type || 'unknown')}
                 </p>
                 <p className="text-secondary mb-3">
-                  {exercise.questions?.length || 0} questions
+                  {exercise?.questions?.length || 0} questions
                 </p>
               </div>
               <div className="card-footer exercise-card-footer">
                 <small className="text-secondary">
-                  By {exercise.creator.name} on{' '}
-                  {new Date(exercise.createdAt).toLocaleDateString()}
+                  By {exercise?.creator?.name || 'Unknown'} on{' '}
+                  {exercise?.createdAt ? new Date(exercise.createdAt).toLocaleDateString() : 'Unknown date'}
                 </small>
                 
                 {/* Different buttons based on user role */}
                 {user?.role === 'student' ? (
-                  <Link to={`/exercises/${exercise.id}`} className="btn btn-sm btn-primary">
+                  <Link to={`/exercises/${exercise?._id || exercise?.id || '#'}`} className="btn btn-sm btn-primary">
                     Start Exercise
                   </Link>
                 ) : (
-                  <Link to={`/exercises/${exercise.id}`} className="btn btn-sm btn-outline-primary">
+                  <Link to={`/exercises/${exercise?._id || exercise?.id || '#'}`} className="btn btn-sm btn-outline-primary">
                     View Details
                   </Link>
                 )}

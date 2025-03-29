@@ -1,0 +1,350 @@
+/**
+ * MatchingExercise Component Styles
+ */
+
+:root {
+  --primary-color: #4a6fa5;
+  --primary-dark: #3d5d8a;
+  --secondary-color: #6e9ad6;
+  --accent-color: #e9f1fc;
+  --correct-color: #5cb85c;
+  --incorrect-color: #d9534f;
+  --neutral-color: #f5f5f5;
+  --text-color: #333;
+  --light-text: #666;
+  --border-color: #ddd;
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.1);
+  --shadow-md: 0 2px 10px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 4px 20px rgba(0, 0, 0, 0.15);
+  --transition-fast: 0.2s ease;
+  --transition-normal: 0.3s ease;
+}
+
+.matching-exercise-container {
+  max-width: 800px;
+  margin: 0 auto;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: var(--shadow-md);
+  padding: 25px;
+  font-family: 'Arial', sans-serif;
+  line-height: 1.6;
+  color: var(--text-color);
+}
+
+/* Exercise header */
+.exercise-header {
+  margin-bottom: 25px;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 15px;
+}
+
+.exercise-question {
+  font-size: 1.4rem;
+  margin: 0 0 10px 0;
+  color: var(--primary-color);
+  font-weight: 600;
+}
+
+.exercise-instructions {
+  font-size: 0.95rem;
+  color: var(--light-text);
+  margin-bottom: 10px;
+}
+
+.exercise-score {
+  font-weight: bold;
+  color: var(--primary-color);
+  font-size: 0.9rem;
+}
+
+/* Matching container */
+.matching-container {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 30px;
+  position: relative;
+}
+
+.word-bank-list,
+.match-options-list {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+  width: 45%;
+}
+
+.word-bank-item,
+.match-option-item {
+  background-color: var(--accent-color);
+  border-radius: 6px;
+  padding: 12px 15px;
+  margin-bottom: 10px;
+  box-shadow: var(--shadow-sm);
+  position: relative;
+  display: flex;
+  align-items: center;
+  min-height: 65px;
+  transition: background-color var(--transition-fast), 
+              box-shadow var(--transition-fast),
+              transform var(--transition-fast);
+}
+
+.word-bank-item {
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.word-bank-item:hover,
+.match-option-item:hover {
+  box-shadow: var(--shadow-md);
+}
+
+.match-option-item {
+  justify-content: center;
+  background-color: var(--secondary-color);
+  color: white;
+}
+
+.match-option-item.selected {
+  background-color: var(--primary-color);
+  transform: scale(1.02);
+}
+
+.item-text {
+  font-weight: 500;
+  flex-grow: 1;
+  margin-bottom: 8px;
+  word-break: break-word;
+}
+
+.match-option-item .item-text {
+  margin-bottom: 0;
+  text-align: center;
+}
+
+.matching-selection {
+  width: 100%;
+}
+
+.match-dropdown {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  background-color: white;
+  font-size: 0.9rem;
+  outline: none;
+  transition: border-color var(--transition-fast);
+}
+
+.match-dropdown:focus {
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 2px rgba(74, 111, 165, 0.2);
+}
+
+.match-dropdown:disabled {
+  background-color: #f9f9f9;
+  cursor: not-allowed;
+}
+
+/* Connection area and lines */
+.connection-area {
+  position: absolute;
+  width: 10%;
+  height: 100%;
+  left: 45%;
+  z-index: 0;
+}
+
+.connection-line {
+  position: absolute;
+  height: 2px;
+  background-color: var(--primary-color);
+  transform-origin: 0 0;
+  z-index: 1;
+  transition: background-color var(--transition-fast);
+}
+
+.connection-line.correct {
+  background-color: var(--correct-color);
+}
+
+/* Correct/Incorrect states */
+.word-bank-item.correct,
+.match-option-item.correct {
+  border: 2px solid var(--correct-color);
+  background-color: rgba(92, 184, 92, 0.1);
+}
+
+.word-bank-item.incorrect,
+.match-option-item.incorrect {
+  border: 2px solid var(--incorrect-color);
+  background-color: rgba(217, 83, 79, 0.1);
+}
+
+/* Feedback area */
+.exercise-feedback {
+  background-color: var(--neutral-color);
+  border-radius: 6px;
+  padding: 15px;
+  margin-bottom: 20px;
+}
+
+.feedback-message {
+  font-weight: bold;
+  margin-bottom: 10px;
+  font-size: 1.1rem;
+}
+
+.feedback-details {
+  font-size: 0.9rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+.correct-matches,
+.incorrect-matches {
+  flex: 1;
+  min-width: 250px;
+}
+
+.correct-matches h4,
+.incorrect-matches h4 {
+  margin-top: 0;
+  margin-bottom: 10px;
+  font-size: 1rem;
+}
+
+.correct-matches ul,
+.incorrect-matches ul {
+  margin: 0;
+  padding-left: 20px;
+}
+
+.correct-matches li {
+  color: var(--correct-color);
+}
+
+.incorrect-matches li {
+  color: var(--incorrect-color);
+}
+
+/* Action buttons */
+.exercise-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.btn {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background-color var(--transition-fast);
+}
+
+.btn-submit {
+  background-color: var(--primary-color);
+  color: white;
+}
+
+.btn-submit:hover {
+  background-color: var(--primary-dark);
+}
+
+.btn-submit:disabled {
+  background-color: #a0a0a0;
+  cursor: not-allowed;
+}
+
+.btn-reset {
+  background-color: #f8f9fa;
+  border: 1px solid var(--border-color);
+  color: var(--light-text);
+}
+
+.btn-reset:hover {
+  background-color: #e2e6ea;
+}
+
+/* Error message */
+.error-message {
+  padding: 20px;
+  background-color: #f8d7da;
+  color: #721c24;
+  border-radius: 4px;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+/* Debug styles */
+.debug-info {
+  margin-top: 30px;
+  padding: 15px;
+  border: 1px dashed #ccc;
+  border-radius: 6px;
+  background-color: #f8f9fa;
+}
+
+.debug-info h4 {
+  margin-top: 0;
+  margin-bottom: 10px;
+  color: #d63384;
+}
+
+.debug-info details {
+  margin-bottom: 10px;
+}
+
+.debug-info summary {
+  cursor: pointer;
+  padding: 5px 0;
+  font-weight: bold;
+  color: #6610f2;
+}
+
+.debug-info pre {
+  background-color: #f1f1f1;
+  padding: 10px;
+  border-radius: 4px;
+  overflow-x: auto;
+  margin: 0;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .matching-container {
+    flex-direction: column;
+  }
+
+  .word-bank-list,
+  .match-options-list {
+    width: 100%;
+  }
+
+  .connection-area {
+    display: none;
+  }
+
+  .match-options-list {
+    margin-top: 20px;
+  }
+  
+  .feedback-details {
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .exercise-actions {
+    flex-direction: column;
+  }
+  
+  .btn {
+    width: 100%;
+  }
+}

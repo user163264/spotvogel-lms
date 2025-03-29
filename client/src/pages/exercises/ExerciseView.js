@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import MatchingWords from '../../components/exercises/MatchingWords';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { getExerciseById, deleteExercise } from '../../services/exerciseService';
 import { useAuth } from '../../context/AuthContext';
@@ -45,6 +46,10 @@ const ExerciseView = () => {
   };
   
   const goToNextQuestion = () => {
+    if (!exercise?.questions || !Array.isArray(exercise.questions)) {
+      return; // No questions to navigate to
+    }
+    
     if (activeQuestionIndex < exercise.questions.length - 1) {
       setActiveQuestionIndex(activeQuestionIndex + 1);
     }
@@ -68,41 +73,44 @@ const ExerciseView = () => {
     return <Alert type="info" message="Exercise not found" />;
   }
   
-  const currentQuestion = exercise.questions[activeQuestionIndex] || {};
-  const isOwner = user && exercise.creator && user.id === exercise.creator;
+  const isOwner = user && exercise?.creator && user.id === exercise.creator;
+  
+  // Safely get the current question with fallbacks
+  const safeQuestions = Array.isArray(exercise?.questions) ? exercise.questions : [];
+  const currentQuestion = safeQuestions[activeQuestionIndex] || {};
   
   return (
     <div className="exercise-view-page">
       <div className="page-header">
         <div className="header-content">
-          <h1>{exercise.title}</h1>
+          <h1>{exercise?.title || 'Untitled Exercise'}</h1>
           
           <div className="exercise-meta">
             <span className="meta-item">
-              <span className="meta-label">Subject:</span> {exercise.subject}
+              <span className="meta-label">Subject:</span> {exercise?.subject || 'Not specified'}
             </span>
             <span className="meta-item">
-              <span className="meta-label">Grade:</span> {exercise.grade}
+              <span className="meta-label">Grade:</span> {exercise?.grade || 'Not specified'}
             </span>
             <span className="meta-item">
-              <span className="meta-label">Difficulty:</span> {exercise.difficultyLevel}
+              <span className="meta-label">Difficulty:</span> {exercise?.difficultyLevel || 'Not specified'}
             </span>
             <span className="meta-item">
-              <span className="meta-label">Time Limit:</span> {exercise.timeLimit} minutes
+              <span className="meta-label">Time Limit:</span> {exercise?.timeLimit || '0'} minutes
             </span>
-            {exercise.tags && exercise.tags.length > 0 && (
+            {exercise?.tags && Array.isArray(exercise.tags) && exercise.tags.length > 0 && (
               <span className="meta-item">
                 <span className="meta-label">Tags:</span> {exercise.tags.join(', ')}
               </span>
             )}
           </div>
           
-          <p className="exercise-description">{exercise.description}</p>
+          <p className="exercise-description">{exercise?.description || 'No description available'}</p>
         </div>
         
         {isOwner && (
           <div className="header-actions">
-            <Link to={`/exercises/edit/${exercise.id}`} className="btn btn-edit">
+            <Link to={`/exercises/edit/${exercise?._id || exercise?.id || id}`} className="btn btn-edit">
               Edit Exercise
             </Link>
             <button 
@@ -118,7 +126,7 @@ const ExerciseView = () => {
       <div className="exercise-content">
         <div className="question-navigation">
           <div className="question-numbers">
-            {exercise.questions.map((_, index) => (
+            {safeQuestions.map((_, index) => (
               <button
                 key={index}
                 className={`question-number ${index === activeQuestionIndex ? 'active' : ''}`}
@@ -133,53 +141,68 @@ const ExerciseView = () => {
         <div className="question-container">
           <div className="question-header">
             <span className="question-counter">
-              Question {activeQuestionIndex + 1} of {exercise.questions.length}
+              Question {activeQuestionIndex + 1} of {safeQuestions.length}
             </span>
             <span className="question-points">
-              {currentQuestion.points} point{currentQuestion.points !== 1 ? 's' : ''}
+              {currentQuestion?.points || 0} point{(currentQuestion?.points || 0) !== 1 ? 's' : ''}
             </span>
           </div>
           
           <div className="question-content">
-            <p className="question-text">{currentQuestion.prompt}</p>
+            <p className="question-text">{currentQuestion?.prompt || 'No question text available'}</p>
             
-            {(currentQuestion.type === 'multiple-choice' || currentQuestion.type === 'checkbox' || currentQuestion.type === 'true-false') && (
+            {(currentQuestion?.type === 'multiple-choice' || currentQuestion?.type === 'checkbox' || currentQuestion?.type === 'true-false') && (
               <div className="question-options">
-                {currentQuestion.options?.map((option) => (
-                  <div key={option.id} className="option">
+                {Array.isArray(currentQuestion?.options) ? currentQuestion.options.map((option) => (
+                  <div key={option?.id || Math.random()} className="option">
                     <label className="option-label">
                       <input 
-                        type={currentQuestion.type === 'checkbox' ? 'checkbox' : 'radio'} 
-                        name={`question-${currentQuestion.id}`}
+                        type={currentQuestion?.type === 'checkbox' ? 'checkbox' : 'radio'} 
+                        name={`question-${currentQuestion?.id || activeQuestionIndex}`}
                         disabled
-                        defaultChecked={option.isCorrect}
+                        defaultChecked={option?.isCorrect}
                       />
-                      <span className="option-text">{option.text}</span>
-                      {option.isCorrect && <span className="correct-indicator">✓</span>}
+                      <span className="option-text">{option?.text || 'No option text'}</span>
+                      {option?.isCorrect && <span className="correct-indicator">✓</span>}
                     </label>
                   </div>
-                ))}
+                )) : <p>No options available</p>}
               </div>
             )}
             
-            {(currentQuestion.type === 'text' || currentQuestion.type === 'numeric') && (
+            {(currentQuestion?.type === 'text' || currentQuestion?.type === 'numeric') && (
               <div className="free-text-answer">
                 <div className="answer-field">
-                  <p><strong>Answer:</strong> {currentQuestion.correctAnswer}</p>
+                  <p><strong>Answer:</strong> {currentQuestion?.correctAnswer || 'No answer provided'}</p>
                 </div>
               </div>
             )}
             
-            {(currentQuestion.feedback?.correct || currentQuestion.feedback?.incorrect) && (
+            {(currentQuestion?.type === 'matching-words' || currentQuestion?.exercise_type === 'matching_words') && (
+              <div className="matching-words-container">
+                <MatchingWords
+                  exercise={{
+                    question: currentQuestion?.prompt || currentQuestion?.question || 'Match the items',
+                    word_bank: currentQuestion?.word_bank || currentQuestion?.leftItems || [],
+                    match_options: currentQuestion?.match_options || currentQuestion?.rightItems || [],
+                    correct_answer: currentQuestion?.correct_answer || {}
+                  }}
+                  readOnly={true}
+                  showCorrectAnswers={true}
+                />
+              </div>
+            )}
+            
+            {(currentQuestion?.feedback?.correct || currentQuestion?.feedback?.incorrect) && (
               <div className="question-feedback">
-                {currentQuestion.feedback.correct && (
+                {currentQuestion?.feedback?.correct && (
                   <div className="feedback correct">
                     <h4>Feedback for correct answer:</h4>
                     <p>{currentQuestion.feedback.correct}</p>
                   </div>
                 )}
                 
-                {currentQuestion.feedback.incorrect && (
+                {currentQuestion?.feedback?.incorrect && (
                   <div className="feedback incorrect">
                     <h4>Feedback for incorrect answer:</h4>
                     <p>{currentQuestion.feedback.incorrect}</p>
@@ -200,7 +223,7 @@ const ExerciseView = () => {
             <button
               className="next-button"
               onClick={goToNextQuestion}
-              disabled={activeQuestionIndex === exercise.questions.length - 1}
+              disabled={activeQuestionIndex >= safeQuestions.length - 1}
             >
               Next Question
             </button>

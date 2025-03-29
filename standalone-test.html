@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Standalone AI Matching Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        h1 {
+            color: #333;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 10px;
+        }
+        .instructions {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        .test-section {
+            margin-top: 30px;
+        }
+        pre {
+            background-color: #f1f1f1;
+            padding: 10px;
+            border-radius: 5px;
+            overflow-x: auto;
+        }
+        code {
+            background-color: #f1f1f1;
+            padding: 2px 5px;
+            border-radius: 3px;
+            font-family: monospace;
+        }
+        .api-key {
+            color: green;
+            font-weight: bold;
+        }
+        button {
+            padding: 10px 15px;
+            background-color: #2196f3;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #0b7dda;
+        }
+        #result {
+            margin-top: 20px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            min-height: 300px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Standalone AI Matching Exercise Test</h1>
+    
+    <div class="instructions">
+        <p>This page allows you to test the OpenAI API integration for generating matching exercises directly from a standalone HTML file. No server required.</p>
+    </div>
+    
+    <div class="test-section">
+        <h2>OpenAI API Test</h2>
+        <p>This will make a direct call to the OpenAI API using your API key to generate a matching exercise.</p>
+        <p>Your API key: <span class="api-key">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</span></p>
+        
+        <div>
+            <label>
+                Topic:
+                <input type="text" id="topic" value="art" />
+            </label>
+            
+            <label>
+                Difficulty:
+                <select id="difficulty">
+                    <option value="easy">Easy</option>
+                    <option value="medium" selected>Medium</option>
+                    <option value="hard">Hard</option>
+                </select>
+            </label>
+            
+            <button onclick="generateExercise()">Generate Exercise</button>
+        </div>
+        
+        <div id="status"></div>
+        <pre id="result">Results will appear here...</pre>
+    </div>
+    
+    <div class="test-section">
+        <h2>Simple Matching Exercise Example</h2>
+        <p>This is a static example of a matching exercise that does not require API calls:</p>
+        
+        <div id="staticExample">
+            <h3>Match the countries with their capitals</h3>
+            <div style="display: flex; gap: 20px;">
+                <div style="flex: 1;">
+                    <h4>Countries</h4>
+                    <ul id="countries" style="list-style: none; padding: 0;">
+                        <li style="padding: 10px; margin: 5px 0; background: #f1f1f1; border-radius: 5px;">France</li>
+                        <li style="padding: 10px; margin: 5px 0; background: #f1f1f1; border-radius: 5px;">Japan</li>
+                        <li style="padding: 10px; margin: 5px 0; background: #f1f1f1; border-radius: 5px;">Brazil</li>
+                        <li style="padding: 10px; margin: 5px 0; background: #f1f1f1; border-radius: 5px;">Egypt</li>
+                        <li style="padding: 10px; margin: 5px 0; background: #f1f1f1; border-radius: 5px;">Australia</li>
+                    </ul>
+                </div>
+                <div style="flex: 1;">
+                    <h4>Capitals</h4>
+                    <ul id="capitals" style="list-style: none; padding: 0;">
+                        <li style="padding: 10px; margin: 5px 0; background: #f1f1f1; border-radius: 5px;">Tokyo</li>
+                        <li style="padding: 10px; margin: 5px 0; background: #f1f1f1; border-radius: 5px;">Cairo</li>
+                        <li style="padding: 10px; margin: 5px 0; background: #f1f1f1; border-radius: 5px;">Paris</li>
+                        <li style="padding: 10px; margin: 5px 0; background: #f1f1f1; border-radius: 5px;">Canberra</li>
+                        <li style="padding: 10px; margin: 5px 0; background: #f1f1f1; border-radius: 5px;">Brasília</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // Function to generate exercise using OpenAI API
+        async function generateExercise() {
+            const topic = document.getElementById('topic').value;
+            const difficulty = document.getElementById('difficulty').value;
+            const resultContainer = document.getElementById('result');
+            const status = document.getElementById('status');
+            
+            // Set loading state
+            status.innerHTML = '<p style="color: blue;">Generating exercise...</p>';
+            resultContainer.textContent = 'Calling OpenAI API...';
+            
+            // Basic prompt template
+            const prompt = `
+                Create a matching exercise about ${topic} for an educational platform.
+                The exercise should match related concepts, definitions, or examples.
+                
+                Create a ${difficulty} difficulty exercise.
+                
+                Return ONLY a JSON object with the following structure:
+                {
+                  "exercise_type": "matching_words",
+                  "question": "Match each item with its correct counterpart.",
+                  "word_bank": ["Item1", "Item2", "Item3", "Item4", "Item5"],
+                  "match_options": ["Match1", "Match2", "Match3", "Match4", "Match5"],
+                  "correct_answer": {
+                    "Item1": "Match3",
+                    "Item2": "Match1",
+                    "Item3": "Match5",
+                    "Item4": "Match2",
+                    "Item5": "Match4"
+                  }
+                }
+            `;
+            
+            // API key
+            const apiKey = "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";
+            
+            try {
+                // Call OpenAI API
+                const response = await fetch('https://api.openai.com/v1/chat/completions', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${apiKey}`
+                    },
+                    body: JSON.stringify({
+                        model: 'gpt-3.5-turbo',
+                        messages: [
+                            {
+                                role: 'system',
+                                content: 'You are an educational content creator specializing in creating matching exercises for students.'
+                            },
+                            {
+                                role: 'user',
+                                content: prompt
+                            }
+                        ],
+                        temperature: 0.7,
+                        max_tokens: 1000
+                    })
+                });
+                
+                // Check if the response is OK
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    const errorMessage = errorData.error?.message || response.statusText;
+                    throw new Error(`OpenAI API error: ${errorMessage}`);
+                }
+                
+                // Parse the response
+                const data = await response.json();
+                const content = data.choices[0]?.message?.content;
+                
+                if (!content) {
+                    throw new Error('Empty response from OpenAI API');
+                }
+                
+                // Extract JSON from response content
+                const jsonMatch = content.match(/\{[\s\S]*\}/);
+                if (!jsonMatch) {
+                    throw new Error('No JSON found in the response');
+                }
+                
+                // Parse the extracted JSON
+                const exerciseData = JSON.parse(jsonMatch[0]);
+                
+                // Display the result
+                status.innerHTML = '<p style="color: green;">Exercise generated successfully!</p>';
+                resultContainer.textContent = JSON.stringify(exerciseData, null, 2);
+                
+                // Create interactive exercise
+                createInteractiveExercise(exerciseData);
+                
+            } catch (error) {
+                // Handle error
+                status.innerHTML = `<p style="color: red;">Error: ${error.message}</p>`;
+                resultContainer.textContent = `Error: ${error.message}`;
+                console.error('Error generating exercise:', error);
+            }
+        }
+        
+        // Function to create interactive exercise
+        function createInteractiveExercise(exerciseData) {
+            // Create container
+            const container = document.createElement('div');
+            container.id = 'interactive-exercise';
+            container.style.marginTop = '30px';
+            container.style.padding = '15px';
+            container.style.backgroundColor = '#f8f9fa';
+            container.style.borderRadius = '5px';
+            
+            // Add title
+            const title = document.createElement('h3');
+            title.textContent = exerciseData.question;
+            container.appendChild(title);
+            
+            // Create columns container
+            const columnsContainer = document.createElement('div');
+            columnsContainer.style.display = 'flex';
+            columnsContainer.style.gap = '20px';
+            
+            // Create left column
+            const leftColumn = document.createElement('div');
+            leftColumn.style.flex = '1';
+            
+            const leftTitle = document.createElement('h4');
+            leftTitle.textContent = 'Items';
+            leftColumn.appendChild(leftTitle);
+            
+            const leftList = document.createElement('ul');
+            leftList.style.listStyle = 'none';
+            leftList.style.padding = '0';
+            
+            exerciseData.word_bank.forEach(item => {
+                const li = document.createElement('li');
+                li.textContent = item;
+                li.style.padding = '10px';
+                li.style.margin = '5px 0';
+                li.style.backgroundColor = 'white';
+                li.style.borderRadius = '5px';
+                li.style.border = '1px solid #ddd';
+                leftList.appendChild(li);
+            });
+            
+            leftColumn.appendChild(leftList);
+            
+            // Create right column
+            const rightColumn = document.createElement('div');
+            rightColumn.style.flex = '1';
+            
+            const rightTitle = document.createElement('h4');
+            rightTitle.textContent = 'Matches';
+            rightColumn.appendChild(rightTitle);
+            
+            const rightList = document.createElement('ul');
+            rightList.style.listStyle = 'none';
+            rightList.style.padding = '0';
+            
+            exerciseData.match_options.forEach(item => {
+                const li = document.createElement('li');
+                li.textContent = item;
+                li.style.padding = '10px';
+                li.style.margin = '5px 0';
+                li.style.backgroundColor = 'white';
+                li.style.borderRadius = '5px';
+                li.style.border = '1px solid #ddd';
+                rightList.appendChild(li);
+            });
+            
+            rightColumn.appendChild(rightList);
+            
+            // Add columns to container
+            columnsContainer.appendChild(leftColumn);
+            columnsContainer.appendChild(rightColumn);
+            container.appendChild(columnsContainer);
+            
+            // Add to document before the result
+            const resultElement = document.getElementById('result');
+            resultElement.parentNode.insertBefore(container, resultElement);
+        }
+    </script>
+</body>
+</html>

@@ -1,34 +1,8 @@
-# Python
-__pycache__/
-*.py[cod]
-*$py.class
-*.so
-.Python
-env/
-build/
-develop-eggs/
-dist/
-downloads/
-eggs/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-*.egg-info/
-.installed.cfg
-*.egg
-
-# Node.js
+# Dependencies
 node_modules/
 npm-debug.log
 yarn-debug.log
 yarn-error.log
-.pnp/
-.pnp.js
-.next/
-out/
 
 # Environment variables
 .env
@@ -37,111 +11,36 @@ out/
 .env.test.local
 .env.production.local
 
-# IDE
-.vscode/
+# Build directories
+/client/build
+/client/dist
+
+# IDE and editor files
 .idea/
+.vscode/
 *.swp
 *.swo
-.cursor/
+.DS_Store
 
 # Logs
-logs/
+logs
 *.log
 
-# OS specific
-.DS_Store
-Thumbs.db
+# Testing
+/coverage
 
-# Backup files
-backups/
-*~
+# Production build
+/build
 
-# Database files
-*.sqlite3
-*.db
+# MongoDB local files
+/data/db
 
-# Coverage
-.coverage
-htmlcov/
+# Temporary files
+.tmp/
+.temp/
 
-# Pytest
-.pytest_cache/
+# Generated API documentation
+/docs/api/
 
-# Virtual environment
-venv/
-
-### Logs ###
-*.log
-logs/*.log
-logs/*.log.*
-!logs/README.md
-backend/server.log
-frontend/server.log
-frontend/dev.log
-frontend/frontend.log
-
-### Environment ###
-.env
-.venv
-.env.local
-env/
-venv/
-ENV/
-env.bak/
-venv.bak/
-
-### Node ###
-node_modules/
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-.pnp/
-.pnp.js
-.cache/
-.next/
-out/
-.DS_Store
-
-### Database ###
-*.db
-*.sqlite
-*.sqlite3
-
-### IDE ###
-.idea/
-.vscode/
-*.swp
-*.swo
-*.sublime-workspace
-*.sublime-project
-.DS_Store
-.vs/
-
-### Other ###
-*.bak
-.coverage
-htmlcov/
-.pytest_cache/
-
-# testing
-coverage/
-
-# production
-build/
-dist/
-
-# misc
-.env.example
-
-# IDE specific files
-.idea/
-.vscode/
-*.swp
-*.swo
-
-# Logs
-logs/
-*.log
-
-# Sensitive data
-openAI_API_key.txt 
+# User-specific files
+.npmrc

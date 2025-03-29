@@ -26,6 +26,10 @@ import Profile from './pages/Profile';
 import NotFound from './pages/NotFound';
 import ApiTester from './components/debug/ApiTester';
 
+// Import our test pages
+import MatchingWordsTestPage from './pages/test/MatchingWordsTestPage';
+import MatchingWordsOptimizedTestPage from './pages/test/MatchingWordsOptimizedTestPage';
+
 // CSS
 import './App.css';
 
@@ -146,6 +150,10 @@ function App() {
             <Route path="/debug" element={
               <ApiTester />
             } />
+            
+            {/* Test Routes for MatchingWords Component */}
+            <Route path="/test/matching-words" element={<MatchingWordsOptimizedTestPage />} />
+            <Route path="/test/matching-words-original" element={<MatchingWordsTestPage />} />
             
             {/* 404 Route */}
             <Route path="*" element={<NotFound />} />

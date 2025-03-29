@@ -1,6 +1,5 @@
 #!/bin/bash
 
-# Make all scripts in the scripts directory executable
+# Makes scripts executable
 chmod +x /Users/admin/Documents/lms-system/scripts/*.sh
-
-echo "All scripts have been made executable!"
+echo "All scripts are now executable"

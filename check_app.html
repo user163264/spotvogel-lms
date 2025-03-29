@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Check LMS App Status</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        h1 {
+            color: #333;
+            border-bottom: 1px solid #ddd;
+            padding-bottom: 10px;
+        }
+        .instruction {
+            background-color: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        .step {
+            margin-bottom: 20px;
+        }
+        .step h3 {
+            margin-bottom: 5px;
+        }
+        code {
+            background-color: #f1f1f1;
+            padding: 2px 5px;
+            border-radius: 3px;
+            font-family: monospace;
+        }
+        .links {
+            margin-top: 30px;
+        }
+        .links a {
+            display: block;
+            margin-bottom: 10px;
+            color: #0066cc;
+            text-decoration: none;
+        }
+        .links a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <h1>LMS System App Status Checker</h1>
+    
+    <div class="instruction">
+        <p>This file will help you check if your LMS app is running correctly. Follow these steps to test your application.</p>
+    </div>
+    
+    <div class="step">
+        <h3>Step 1: Start the Development Server</h3>
+        <p>If the app is not already running, open a terminal/command prompt and navigate to the frontend directory:</p>
+        <code>cd /Users/admin/Documents/lms-system/frontend</code>
+        <p>Then start the development server:</p>
+        <code>npm start</code>
+        <p>Wait for the message that says "Compiled successfully!" or similar.</p>
+    </div>
+    
+    <div class="step">
+        <h3>Step 2: Open the Application</h3>
+        <p>Once the server is running, you can access the application at these URLs:</p>
+    </div>
+    
+    <div class="links">
+        <h3>Direct Links:</h3>
+        <a href="http://localhost:3000" target="_blank">Homepage</a>
+        <a href="http://localhost:3000/exercises/matching-demo" target="_blank">Basic Matching Exercise Demo</a>
+        <a href="http://localhost:3000/test/simple" target="_blank">Simple Test Page</a>
+        <a href="http://localhost:3000/test/ai-matching" target="_blank">AI Matching Test Page (Uses OpenAI)</a>
+    </div>
+    
+    <div class="step">
+        <h3>Step 3: Troubleshooting</h3>
+        <p>If you encounter issues:</p>
+        <ul>
+            <li>Check the terminal for error messages</li>
+            <li>Check browser console (F12) for JavaScript errors</li>
+            <li>Ensure the OpenAI API key is correctly set in your <code>.env</code> file for the AI features</li>
+            <li>Make sure all components are properly imported</li>
+        </ul>
+    </div>
+    
+    <div class="step">
+        <h3>OpenAI API Key</h3>
+        <p>The AI Matching Test requires a valid OpenAI API key to function properly. Make sure your key is set in the <code>.env</code> file:</p>
+        <code>REACT_APP_OPENAI_API_KEY=sk-xxxx...</code>
+    </div>
+</body>
+</html>

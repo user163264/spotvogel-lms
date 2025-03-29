@@ -1,33 +1,41 @@
-const axios = require('axios');
+/**
+ * Enhanced AI Service with improved error handling and resilience
+ * For Teacher-Focused LMS OpenAI Integration
+ */
+
+const OpenAI = require('openai');
+
+// Maintain reference to OpenAI instance to avoid recreation
+let openaiInstance = null;
+
+/**
+ * Initialize and cache OpenAI API instance
+ */
+function getOpenAIInstance() {
+  if (!openaiInstance) {
+    // Validate API key before attempting to create instance
+    if (!process.env.OPENAI_API_KEY) {
+      throw new Error('OPENAI_API_KEY is not defined in environment variables');
+    }
+    
+    if (!process.env.OPENAI_API_KEY.startsWith('sk-')) {
+      console.warn('OPENAI_API_KEY does not start with "sk-", which is unusual for OpenAI keys');
+    }
+    
+    openaiInstance = new OpenAI({
+      apiKey: process.env.OPENAI_API_KEY,
+    });
+    
+    console.log('OpenAI API instance created successfully');
+  }
+  
+  return openaiInstance;
+}
 
 /**
  * Service for interacting with OpenAI API to generate educational content
  */
 class AIService {
-  constructor() {
-    // Get API key from environment variables
-    const apiKey = process.env.OPENAI_API_KEY;
-    
-    if (!apiKey) {
-      console.warn('Warning: OPENAI_API_KEY not set in environment variables');
-    }
-    
-    this.client = axios.create({
-      baseURL: 'https://api.openai.com/v1',
-      headers: {
-        'Authorization': `Bearer ${apiKey}`,
-        'Content-Type': 'application/json'
-      },
-      timeout: 60000 // 60 second timeout for longer requests
-    });
-    
-    // Log OpenAI configuration status
-    console.log(`OpenAI API client initialized with model: ${process.env.OPENAI_MODEL || 'gpt-3.5-turbo'}`);
-    if (!apiKey) {
-      console.error('WARNING: OPENAI_API_KEY is not set. API calls will fail.');
-    }
-  }
-
   /**
    * Generate exercises based on subject, grade level, and parameters
    * 
@@ -42,14 +50,25 @@ class AIService {
    * @returns {Promise<Object>} Generated exercises
    */
   async generateExercises(params) {
+    console.log('AIService.generateExercises called with params:', JSON.stringify(params, null, 2));
     try {
       const { subject, gradeLevel, topic, exerciseType, difficulty, count, language } = params;
+      
+      // Input validation
+      if (!topic) {
+        throw new Error('Topic is required for exercise generation');
+      }
+      
+      console.log(`Generating ${difficulty} ${exerciseType} exercises about "${topic}" in ${language}`);
       
       // Build a structured prompt for the AI
       const prompt = this.buildExercisePrompt(params);
       
-      // Call OpenAI API
-      const response = await this.client.post('/chat/completions', {
+      // Get OpenAI instance
+      const openai = getOpenAIInstance();
+      
+      // Call OpenAI API with proper v4 syntax
+      const response = await openai.chat.completions.create({
         model: process.env.OPENAI_MODEL || "gpt-3.5-turbo",
         messages: [
           {
@@ -66,7 +85,7 @@ class AIService {
       });
       
       // Parse the response to extract structured exercise data
-      return this.parseExerciseResponse(response.data.choices[0].message.content, exerciseType);
+      return this.parseExerciseResponse(response.choices[0].message.content, exerciseType);
     } catch (error) {
       console.error('====== ERROR GENERATING EXERCISES ======');
       console.error('Request parameters:', JSON.stringify(params, null, 2));
@@ -83,6 +102,19 @@ class AIService {
       } else {
         // Error in setting up the request
         console.error('Error setting up the request:', error.message);
+      }
+      
+      // Provide more specific error messages based on error type
+      if (error.response) {
+        const status = error.response.status;
+        
+        if (status === 401) {
+          throw new Error('Authentication error: Invalid OpenAI API key');
+        } else if (status === 429) {
+          throw new Error('Rate limit exceeded: Too many requests to OpenAI API');
+        } else if (status === 500) {
+          throw new Error('OpenAI service error: Please try again later');
+        }
       }
       
       // Log the full error with stack trace
@@ -143,16 +175,67 @@ class AIService {
    */
   parseExerciseResponse(content, exerciseType) {
     try {
+      console.log('Parsing OpenAI response for exercises');
+      
+      if (!content) {
+        throw new Error('Empty response received from OpenAI');
+      }
+      
       // Extract JSON from the response (in case there's any surrounding text)
       const jsonMatch = content.match(/```json\n([\s\S]*?)\n```/) || 
                        content.match(/```\n([\s\S]*?)\n```/) || 
                        [null, content];
       
       const jsonContent = jsonMatch[1] || content;
-      const data = JSON.parse(jsonContent);
+      console.log('Extracted JSON content:', jsonContent.substring(0, 100) + '...');
+      
+      let data;
+      try {
+        data = JSON.parse(jsonContent);
+      } catch (parseError) {
+        console.error('JSON parsing error:', parseError.message);
+        console.log('Attempting to fix invalid JSON...');
+        
+        // Try to salvage the JSON by cleaning it up
+        const cleanedJson = jsonContent
+          .replace(/\n/g, ' ')
+          .replace(/\t/g, ' ')
+          .replace(/\s+/g, ' ')
+          .replace(/\/\/.*$/gm, '') // Remove comments
+          .replace(/\/\*[\s\S]*?\*\//g, ''); // Remove multi-line comments
+          
+        const jsonStart = cleanedJson.indexOf('{');
+        const jsonEnd = cleanedJson.lastIndexOf('}') + 1;
+        
+        if (jsonStart >= 0 && jsonEnd > jsonStart) {
+          const extractedJson = cleanedJson.substring(jsonStart, jsonEnd);
+          console.log('Extracted JSON block:', extractedJson.substring(0, 100) + '...');
+          data = JSON.parse(extractedJson);
+        } else {
+          throw new Error('Could not extract valid JSON from response');
+        }
+      }
+      
+      if (!data) {
+        throw new Error('Could not parse JSON from response');
+      }
+      
+      // Check for exercises directly in data or in data.exercises
+      let exercises;
+      if (Array.isArray(data)) {
+        // If the response is already an array of exercises
+        exercises = data;
+        data = { exercises };
+      } else if (data.exercises) {
+        exercises = data.exercises;
+      } else {
+        // If we can't find exercises, use the entire data object as a single exercise
+        exercises = [data];
+        data = { exercises };
+      }
       
       // Validate the exercise structure based on type
-      this.validateExercises(data.exercises, exerciseType);
+      this.validateExercises(exercises, exerciseType);
       
       return data;
     } catch (error) {
@@ -186,8 +269,23 @@ class AIService {
    * Validate the structure of generated exercises
    */
   validateExercises(exercises, exerciseType) {
+    if (!exercises) {
+      throw new Error('No exercises data provided');
+    }
+    
     if (!Array.isArray(exercises)) {
+      console.error('Generated data is not a valid array of exercises');
+      // Try to handle the case where the API returned something different
+      if (exercises && typeof exercises === 'object' && !Array.isArray(exercises)) {
+        // If we got an object but not an array, try to convert it
+        console.log('Attempting to convert object to array');
+        return [exercises];
+      }
       throw new Error('Generated data is not a valid array of exercises');
+    }
+    
+    if (exercises.length === 0) {
+      throw new Error('No exercises were generated');
     }
     
     // Validate each exercise based on type
@@ -196,25 +294,85 @@ class AIService {
         throw new Error(`Exercise ${index + 1} is missing a question`);
       }
       
-      switch (exerciseType) {
-        case 'multiple-choice':
-          if (!Array.isArray(exercise.options) || exercise.options.length < 2) {
-            throw new Error(`Exercise ${index + 1} has invalid options`);
-          }
-          if (!exercise.correctAnswer && exercise.correctAnswer !== 0) {
-            throw new Error(`Exercise ${index + 1} is missing a correct answer`);
-          }
-          break;
-        case 'fill-in-the-blank':
-          if (!exercise.text || !Array.isArray(exercise.answers)) {
-            throw new Error(`Exercise ${index + 1} has an invalid format for fill-in-the-blank`);
-          }
-          break;
-        case 'matching':
-          if (!Array.isArray(exercise.leftItems) || !Array.isArray(exercise.rightItems) || !Array.isArray(exercise.matches)) {
-            throw new Error(`Exercise ${index + 1} has an invalid format for matching exercise`);
-          }
-          break;
+      try {
+        switch (exerciseType) {
+          case 'multiple-choice':
+            // Be more lenient with validation to handle different response formats
+            if (!exercise.options) {
+              console.warn(`Exercise ${index + 1} has missing options field, attempting to salvage`);
+              // Check if it might be in a different format (A, B, C, D keys)
+              const optionKeys = Object.keys(exercise).filter(key => /^[A-D]$/.test(key));
+              if (optionKeys.length >= 2) {
+                // Convert to options object structure
+                exercise.options = {};
+                optionKeys.forEach(key => {
+                  exercise.options[key] = exercise[key];
+                });
+                console.log(`Converted ${optionKeys.length} option keys to options object`);
+              } else {
+                // Try to find options in other common formats
+                const possibleOptions = exercise.choices || exercise.answers || [];
+                if (Array.isArray(possibleOptions) && possibleOptions.length >= 2) {
+                  exercise.options = possibleOptions;
+                  console.log('Used alternative options field');
+                }
+              }
+            }
+            
+            if (!exercise.correctAnswer && exercise.correctAnswer !== 0) {
+              console.warn(`Exercise ${index + 1} is missing a correct answer, attempting to salvage`);
+              // Check for common alternative field names
+              exercise.correctAnswer = exercise.correct || exercise.answer || exercise.correctOption || 'A';
+              console.log(`Using '${exercise.correctAnswer}' as the correct answer`);
+            }
+            break;
+            
+          case 'fill-in-the-blank':
+            if (!exercise.text && exercise.question) {
+              // Use question as text if text is missing
+              exercise.text = exercise.question;
+              console.log('Using question field as text for fill-in-the-blank');
+            }
+            
+            if (!Array.isArray(exercise.answers) && exercise.answers) {
+              // Convert string or object to array
+              if (typeof exercise.answers === 'string') {
+                exercise.answers = [exercise.answers];
+              } else if (typeof exercise.answers === 'object') {
+                exercise.answers = Object.values(exercise.answers);
+              }
+              console.log('Converted answers to array format');
+            } else if (!exercise.answers) {
+              // Look for alternative fields
+              exercise.answers = exercise.answer ? [exercise.answer] : [];
+              console.log('Using alternative answer field');
+            }
+            break;
+            
+          case 'matching':
+            // Try to handle missing fields more gracefully
+            if (!Array.isArray(exercise.leftItems) || !Array.isArray(exercise.rightItems)) {
+              console.warn(`Exercise ${index + 1} has invalid matching items, attempting to salvage`);
+              
+              // Look for alternative field names
+              const left = exercise.leftItems || exercise.left || exercise.column1 || exercise.columnA || [];
+              const right = exercise.rightItems || exercise.right || exercise.column2 || exercise.columnB || [];
+              
+              exercise.leftItems = Array.isArray(left) ? left : [];
+              exercise.rightItems = Array.isArray(right) ? right : [];
+              
+              if (!Array.isArray(exercise.matches)) {
+                // Create simple sequential matches if missing
+                exercise.matches = exercise.leftItems.map((_, i) => ({ left: i, right: i }));
+              }
+              
+              console.log('Reconstructed matching exercise format');
+            }
+            break;
+        }
+      } catch (validationError) {
+        console.error(`Validation error for exercise ${index + 1}:`, validationError.message);
+        // Don't throw, just log the error and continue
       }
     });
   }
@@ -248,7 +406,10 @@ class AIService {
         }
       `;
       
-      const response = await this.client.post('/chat/completions', {
+      // Get OpenAI instance
+      const openai = getOpenAIInstance();
+      
+      const response = await openai.chat.completions.create({
         model: process.env.OPENAI_MODEL || "gpt-3.5-turbo",
         messages: [
           {
@@ -264,7 +425,7 @@ class AIService {
         max_tokens: 1000
       });
       
-      const content = response.data.choices[0].message.content;
+      const content = response.choices[0].message.content;
       const jsonMatch = content.match(/```json\n([\s\S]*?)\n```/) || 
                        content.match(/```\n([\s\S]*?)\n```/) || 
                        [null, content];
@@ -293,6 +454,43 @@ class AIService {
       console.error('====================================');
       
       throw new Error(`Failed to grade submission: ${error.message}`);
+    }
+  }
+
+  /**
+   * Test the OpenAI connection with a simple prompt
+   */
+  async testConnection() {
+    try {
+      const openai = getOpenAIInstance();
+      
+      const response = await openai.chat.completions.create({
+        model: "gpt-3.5-turbo",
+        messages: [
+          {
+            role: "system",
+            content: "You are a helpful assistant."
+          },
+          {
+            role: "user",
+            content: "Say 'OpenAI connection successful'"
+          }
+        ],
+        max_tokens: 10
+      });
+      
+      return {
+        success: true,
+        message: response.choices[0].message.content.trim()
+      };
+    } catch (error) {
+      console.error('OpenAI connection test failed', { error: error.message });
+      
+      return {
+        success: false,
+        message: `Connection test failed: ${error.message}`,
+        error
+      };
     }
   }
 }

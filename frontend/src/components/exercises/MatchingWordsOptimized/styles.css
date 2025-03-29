@@ -1,0 +1,231 @@
+/**
+ * MatchingWordsOptimized Component Styles
+ * 
+ * These styles are designed for the optimized matching words component,
+ * with responsive behavior and visual connection lines.
+ */
+
+.matching-words-optimized {
+  position: relative;
+  width: 100%;
+  margin: 1rem 0;
+  padding: 1rem;
+  border-radius: 8px;
+  background-color: #f8f9fa;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.matching-content {
+  display: flex;
+  position: relative;
+  min-height: 300px;
+}
+
+/* Column styling */
+.word-bank-column,
+.match-options-column {
+  flex: 1;
+  position: relative;
+  margin: 0 1rem;
+}
+
+.column-title {
+  font-size: 1.1rem;
+  color: #333;
+  font-weight: 600;
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
+/* List styling */
+.word-bank-list,
+.match-options-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+/* Item styling */
+.word-bank-item,
+.match-option-item {
+  position: relative;
+  padding: 0.75rem 1rem;
+  margin-bottom: 0.75rem;
+  background-color: white;
+  border-radius: 6px;
+  border: 2px solid #e0e0e0;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 1rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.word-bank-item:hover,
+.match-option-item:hover {
+  border-color: #bbdefb;
+  background-color: #f5f9ff;
+}
+
+/* Selected state */
+.word-bank-item.selected {
+  border-color: #2196f3;
+  background-color: #e3f2fd;
+}
+
+.match-option-item.selectable {
+  border-color: #2196f3;
+  background-color: #e3f2fd;
+  animation: pulse 1.5s infinite;
+}
+
+/* Matched state */
+.word-bank-item.matched {
+  border-color: #4caf50;
+  background-color: #f1f8e9;
+}
+
+.match-option-item.selected {
+  border-color: #4caf50;
+  background-color: #f1f8e9;
+}
+
+/* Correct/incorrect states */
+.word-bank-item.correct {
+  border-color: #4caf50;
+  background-color: #f1f8e9;
+}
+
+.word-bank-item.incorrect {
+  border-color: #f44336;
+  background-color: #ffebee;
+}
+
+/* Connection area */
+.connection-area {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 5;
+}
+
+/* Connection lines */
+.connection-line {
+  position: absolute;
+  height: 2px;
+  background-color: #2196f3;
+  transform-origin: 0 0;
+}
+
+.connection-line.correct {
+  background-color: #4caf50;
+}
+
+/* Mobile view */
+.mobile-matching {
+  width: 100%;
+  margin-top: 0.5rem;
+}
+
+.mobile-dropdown {
+  width: 100%;
+  padding: 0.5rem;
+  border-radius: 4px;
+  border: 1px solid #e0e0e0;
+  background-color: white;
+  font-size: 0.9rem;
+}
+
+/* Debug section */
+.debug-info {
+  margin-top: 1.5rem;
+  padding: 1rem;
+  border-top: 1px dashed #ccc;
+  font-family: monospace;
+  font-size: 0.85rem;
+}
+
+.debug-section {
+  margin-bottom: 1rem;
+}
+
+.debug-section h4 {
+  margin: 0.5rem 0;
+  color: #555;
+}
+
+/* Animation for selectable items */
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(33, 150, 243, 0.4);
+  }
+  70% {
+    box-shadow: 0 0 0 6px rgba(33, 150, 243, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(33, 150, 243, 0);
+  }
+}
+
+/* Responsive styles */
+@media (max-width: 768px) {
+  .matching-content {
+    flex-direction: column;
+  }
+  
+  .word-bank-column,
+  .match-options-column {
+    width: 100%;
+    margin: 0;
+  }
+  
+  .match-options-column {
+    display: none; /* Hide on mobile, using dropdowns instead */
+  }
+  
+  .word-bank-item {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .item-content {
+    margin-bottom: 0.5rem;
+  }
+}
+
+/* Accessibility focus states */
+.word-bank-item:focus,
+.match-option-item:focus,
+.mobile-dropdown:focus {
+  outline: 2px solid #2196f3;
+  outline-offset: 2px;
+}
+
+/* High contrast mode */
+@media (prefers-contrast: high) {
+  .word-bank-item,
+  .match-option-item {
+    border-width: 2px;
+    border-color: black;
+  }
+  
+  .word-bank-item.selected,
+  .match-option-item.selectable {
+    border-color: black;
+    background-color: #f0f0f0;
+  }
+  
+  .connection-line {
+    height: 3px;
+    background-color: black;
+  }
+  
+  .connection-line.correct {
+    background-color: black;
+  }
+}

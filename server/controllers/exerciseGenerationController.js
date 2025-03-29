@@ -11,6 +11,10 @@ class ExerciseGenerationController {
    * @param {Object} res - Express response object
    */
   async generateExercises(req, res) {
+    console.log('=== Exercise Generation Controller Called ===');
+    console.log('Request path:', req.path);
+    console.log('Request body:', JSON.stringify(req.body, null, 2));
+    console.log('User authentication:', req.user ? 'Authenticated' : 'Not authenticated');
     try {
       const {
         subject,
@@ -30,14 +34,33 @@ class ExerciseGenerationController {
         });
       }
       
+      console.log('Calling AI service with validated parameters');
+      
       // Call AI service to generate exercises
+      // Process and validate parameters
+      let difficultyValue = 3; // Default moderate difficulty
+      if (difficulty) {
+        const parsedDifficulty = parseInt(difficulty, 10);
+        if (!isNaN(parsedDifficulty) && parsedDifficulty >= 1 && parsedDifficulty <= 5) {
+          difficultyValue = parsedDifficulty;
+        }
+      }
+
+      let countValue = 5; // Default number of questions
+      if (count) {
+        const parsedCount = parseInt(count, 10);
+        if (!isNaN(parsedCount) && parsedCount > 0 && parsedCount <= 10) {
+          countValue = parsedCount;
+        }
+      }
+      
       const generatedData = await aiService.generateExercises({
         subject,
         gradeLevel,
         topic,
         exerciseType,
-        difficulty: parseInt(difficulty, 10),
-        count: parseInt(count, 10),
+        difficulty: difficultyValue,
+        count: countValue,
         language
       });
       
@@ -49,16 +72,34 @@ class ExerciseGenerationController {
         for (const exercise of generatedData.exercises) {
           // Map the generated exercise to our database model
           const newExercise = new Exercise({
-            createdBy: req.user._id,
+            creator: req.user._id, // Changed from createdBy to creator to match model
             title: `${topic} - ${exerciseType}`,
-            subject,
-            gradeLevel,
-            topic,
-            type: exerciseType,
-            difficulty,
-            language,
-            content: exercise,
-            // Add any other fields your Exercise model requires
+            description: `Auto-generated ${exerciseType} exercise about ${topic} for ${gradeLevel} level.`,
+            subject: subject,
+            grade: gradeLevel, // Changed from gradeLevel to grade to match model
+            difficultyLevel: difficulty <= 2 ? 'easy' : (difficulty >= 4 ? 'hard' : 'medium'),
+            timeLimit: 30, // Default 30 minutes time limit
+            questions: [
+              {
+                type: exerciseType,
+                prompt: exercise.question,
+                options: Array.isArray(exercise.options) ? 
+                  exercise.options.map((option, idx) => ({
+                    id: String.fromCharCode(65 + idx), // A, B, C, D...
+                    text: option,
+                    isCorrect: idx === exercise.correctAnswer
+                  })) : 
+                  Object.entries(exercise.options || {}).map(([key, value]) => ({
+                    id: key,
+                    text: value,
+                    isCorrect: key === exercise.correctAnswer
+                  })),
+                points: 1
+              }
+            ],
+            isPublished: true,
+            aiGenerated: true,
+            tags: [topic, subject, exerciseType]
           });
           
           const savedExercise = await newExercise.save();
@@ -140,16 +181,34 @@ class ExerciseGenerationController {
       
       // Create new exercise
       const newExercise = new Exercise({
-        createdBy: req.user._id,
-        title,
+        creator: req.user._id, // Changed from createdBy to creator
+        title: title,
+        description: `Saved ${exerciseData.exerciseType} exercise about ${exerciseData.topic}.`,
         subject: exerciseData.subject,
-        gradeLevel: exerciseData.gradeLevel,
-        topic: exerciseData.topic,
-        type: exerciseData.exerciseType,
-        difficulty: exerciseData.difficulty,
-        language: exerciseData.language,
-        content: exerciseData.content,
-        // Add any other fields your Exercise model requires
+        grade: exerciseData.gradeLevel, // Changed from gradeLevel to grade
+        difficultyLevel: exerciseData.difficulty <= 2 ? 'easy' : (exerciseData.difficulty >= 4 ? 'hard' : 'medium'),
+        timeLimit: exerciseData.timeLimit || 30, // Default 30 minutes
+        questions: [
+          {
+            type: exerciseData.exerciseType,
+            prompt: exerciseData.content.question,
+            options: Array.isArray(exerciseData.content.options) ? 
+              exerciseData.content.options.map((option, idx) => ({
+                id: String.fromCharCode(65 + idx),
+                text: option,
+                isCorrect: idx === exerciseData.content.correctAnswer
+              })) : 
+              Object.entries(exerciseData.content.options || {}).map(([key, value]) => ({
+                id: key,
+                text: value,
+                isCorrect: key === exerciseData.content.correctAnswer
+              })),
+            points: 1
+          }
+        ],
+        isPublished: true,
+        aiGenerated: true,
+        tags: [exerciseData.topic, exerciseData.subject, exerciseData.exerciseType]
       });
       
       const savedExercise = await newExercise.save();

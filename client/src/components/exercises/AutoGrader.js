@@ -154,29 +154,29 @@ const AutoGrader = () => {
             <div className="card-body">
               {exercise ? (
                 <>
-                  <h5>{exercise.title}</h5>
-                  <p><strong>Subject:</strong> {exercise.subject}</p>
-                  <p><strong>Topic:</strong> {exercise.topic}</p>
-                  <p><strong>Type:</strong> {exercise.type}</p>
+                  <h5>{exercise?.title || 'Untitled Exercise'}</h5>
+                  <p><strong>Subject:</strong> {exercise?.subject || 'Not specified'}</p>
+                  <p><strong>Topic:</strong> {exercise?.topic || 'Not specified'}</p>
+                  <p><strong>Type:</strong> {exercise?.type || 'Not specified'}</p>
                   
                   <div className="exercise-content mt-3">
                     <h6>Question:</h6>
-                    <p>{exercise.content?.question}</p>
+                    <p>{exercise.content?.question || 'No question available'}</p>
                     
-                    {exercise.type === 'multiple-choice' && exercise.content?.options && (
+                    {exercise?.type === 'multiple-choice' && exercise.content?.options && Array.isArray(exercise.content.options) && (
                       <div className="options">
                         <h6>Options:</h6>
                         <ol type="A">
                           {exercise.content.options.map((option, idx) => (
-                            <li key={idx} className={idx === exercise.content.correctAnswer ? 'text-success' : ''}>
-                              {option} {idx === exercise.content.correctAnswer && '✓'}
+                            <li key={idx} className={idx === exercise.content?.correctAnswer ? 'text-success' : ''}>
+                              {option || 'No option text'} {idx === exercise.content?.correctAnswer && '✓'}
                             </li>
                           ))}
                         </ol>
                       </div>
                     )}
                     
-                    {exercise.content?.correctAnswer && !exercise.content?.options && (
+                    {exercise?.content?.correctAnswer && (!exercise.content?.options || !Array.isArray(exercise.content.options)) && (
                       <div className="correct-answer">
                         <h6>Correct Answer:</h6>
                         <p>{exercise.content.correctAnswer}</p>
@@ -197,23 +197,23 @@ const AutoGrader = () => {
               <h4>Student Submission</h4>
             </div>
             <div className="card-body">
-              <p><strong>Student:</strong> {submission.student?.name || 'Unknown'}</p>
-              <p><strong>Submitted:</strong> {new Date(submission.submittedAt).toLocaleString()}</p>
+              <p><strong>Student:</strong> {submission?.student?.name || 'Unknown'}</p>
+              <p><strong>Submitted:</strong> {submission?.submittedAt ? new Date(submission.submittedAt).toLocaleString() : 'Unknown date'}</p>
               
               <div className="submission-content mt-3">
                 <h6>Student's Answer:</h6>
                 <div className="answer-box p-3 border rounded">
-                  {submission.answer}
+                  {submission?.answer || 'No answer provided'}
                 </div>
                 
-                {submission.attachments && submission.attachments.length > 0 && (
+                {submission?.attachments && Array.isArray(submission.attachments) && submission.attachments.length > 0 && (
                   <div className="attachments mt-3">
                     <h6>Attachments:</h6>
                     <ul className="list-group">
                       {submission.attachments.map((attachment, idx) => (
                         <li key={idx} className="list-group-item">
-                          <a href={attachment.url} target="_blank" rel="noreferrer">
-                            {attachment.name}
+                          <a href={attachment?.url || '#'} target="_blank" rel="noreferrer">
+                            {attachment?.name || `Attachment ${idx+1}`}
                           </a>
                         </li>
                       ))}
@@ -241,7 +241,7 @@ const AutoGrader = () => {
         </div>
       )}
       
-      {submission.isGraded && (
+      {submission?.isGraded && (
         <div className="grading-result card my-4">
           <div className="card-header bg-success text-white">
             <h4>Grading Results</h4>
@@ -249,36 +249,36 @@ const AutoGrader = () => {
           <div className="card-body">
             <div className="row">
               <div className="col-md-3 text-center">
-                <h1 className="display-4">{submission.grade}/100</h1>
+                <h1 className="display-4">{submission?.grade || 0}/100</h1>
                 <p className="text-muted">Score</p>
               </div>
               <div className="col-md-9">
                 <h5>Feedback:</h5>
-                <p>{submission.feedback}</p>
+                <p>{submission?.feedback || 'No feedback provided'}</p>
                 
-                {submission.strengths && submission.strengths.length > 0 && (
+                {submission?.strengths && Array.isArray(submission.strengths) && submission.strengths.length > 0 && (
                   <div className="strengths">
                     <h6 className="text-success">Strengths:</h6>
                     <ul>
                       {submission.strengths.map((strength, idx) => (
-                        <li key={idx}>{strength}</li>
+                        <li key={idx}>{strength || `Strength point ${idx+1}`}</li>
                       ))}
                     </ul>
                   </div>
                 )}
                 
-                {submission.improvements && submission.improvements.length > 0 && (
+                {submission?.improvements && Array.isArray(submission.improvements) && submission.improvements.length > 0 && (
                   <div className="improvements">
                     <h6 className="text-warning">Areas for Improvement:</h6>
                     <ul>
                       {submission.improvements.map((improvement, idx) => (
-                        <li key={idx}>{improvement}</li>
+                        <li key={idx}>{improvement || `Improvement point ${idx+1}`}</li>
                       ))}
                     </ul>
                   </div>
                 )}
                 
-                {submission.teacherNotes && (
+                {submission?.teacherNotes && (
                   <div className="teacher-notes mt-3">
                     <h6>Teacher Notes:</h6>
                     <p className="font-italic">{submission.teacherNotes}</p>
@@ -286,7 +286,7 @@ const AutoGrader = () => {
                 )}
                 
                 <p className="text-muted mt-3">
-                  Graded on {new Date(submission.gradedAt).toLocaleString()}
+                  Graded on {submission?.gradedAt ? new Date(submission.gradedAt).toLocaleString() : 'Unknown date'}
                 </p>
               </div>
             </div>
