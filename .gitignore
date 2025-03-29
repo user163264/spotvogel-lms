@@ -10,6 +10,17 @@ yarn-error.log
 .env.development.local
 .env.test.local
 .env.production.local
+*.env
+
+# API Keys and Secrets
+**/apikey.*
+**/api_key.*
+**/*API_KEY*
+**/*api_key*
+openAI_API_key.txt
+*_API_key.*
+*.pem
+*.key
 
 # Build directories
 /client/build
