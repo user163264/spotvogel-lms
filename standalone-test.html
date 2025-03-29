@@ -73,7 +73,7 @@
     <div class="test-section">
         <h2>OpenAI API Test</h2>
         <p>This will make a direct call to the OpenAI API using your API key to generate a matching exercise.</p>
-        <p>Your API key: <span class="api-key">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</span></p>
+        <p>Your API key: <input type="password" id="apiKey" placeholder="Enter your OpenAI API key here" style="width: 300px;" /></p>
         
         <div>
             <label>
@@ -163,8 +163,15 @@
                 }
             `;
             
-            // API key
-            const apiKey = "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";
+            // Get API key from input
+            const apiKey = document.getElementById('apiKey').value;
+            
+            // Check if API key is provided
+            if (!apiKey) {
+                status.innerHTML = '<p style="color: red;">Error: Please enter your OpenAI API key</p>';
+                resultContainer.textContent = 'Error: API key is required';
+                return;
+            }
             
             try {
                 // Call OpenAI API

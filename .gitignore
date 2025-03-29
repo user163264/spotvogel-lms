@@ -22,6 +22,9 @@ openAI_API_key.txt
 *.pem
 *.key
 
+# Testing files with potential API keys
+standalone-test.html
+
 # Build directories
 /client/build
 /client/dist
