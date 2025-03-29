@@ -1,5 +1,1 @@
-openAI lms local API testing key:
-
-
-
-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
+REPLACE_WITH_YOUR_OPENAI_API_KEY
