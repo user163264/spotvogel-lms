@@ -5,6 +5,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import MatchingExerciseDemoPage from './pages/MatchingExerciseDemoPage';
+import AIMatchingExerciseDemoPage from './pages/AIMatchingExerciseDemoPage';
 import AiMatchingWordsTestPage from './pages/test/AiMatchingWordsTestPage';
 import SimpleTestPage from './pages/test/SimpleTestPage';
 import './App.css';
@@ -24,6 +25,7 @@ const App = () => {
           <nav className="app-nav">
             <Link to="/">Home</Link>
             <Link to="/exercises/matching-demo">Matching Exercise Demo</Link>
+            <Link to="/exercises/ai-matching-demo">AI Matching Exercise Demo</Link>
             <Link to="/test/ai-matching">AI Matching Words Test</Link>
             <Link to="/test/simple">Simple Test</Link>
           </nav>
@@ -34,6 +36,7 @@ const App = () => {
           <Routes>
             <Route path="/" element={<HomePage />} />
             <Route path="/exercises/matching-demo" element={<MatchingExerciseDemoPage />} />
+            <Route path="/exercises/ai-matching-demo" element={<AIMatchingExerciseDemoPage />} />
             <Route path="/test/ai-matching" element={<AiMatchingWordsTestPage />} />
             <Route path="/test/simple" element={<SimpleTestPage />} />
             <Route path="*" element={<NotFoundPage />} />
@@ -67,6 +70,12 @@ const HomePage = () => {
             <Link to="/exercises/matching-demo" className="feature-link">
               <span className="feature-title">Matching Exercise</span>
               <span className="feature-desc">Interactive matching exercise component demonstration</span>
+            </Link>
+          </li>
+          <li>
+            <Link to="/exercises/ai-matching-demo" className="feature-link">
+              <span className="feature-title">AI Matching Exercise Demo</span>
+              <span className="feature-desc">Automatically generate matching exercises from lesson content using AI</span>
             </Link>
           </li>
           <li>

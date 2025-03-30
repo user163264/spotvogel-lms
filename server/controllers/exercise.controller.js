@@ -179,7 +179,7 @@ const deleteExercise = asyncHandler(async (req, res) => {
     throw new Error('Not authorized to delete this exercise');
   }
   
-  await exercise.remove();
+  await Exercise.findByIdAndDelete(req.params.id);
   
   res.status(200).json({
     success: true,
@@ -203,7 +203,7 @@ const generateExerciseWithAI = asyncHandler(async (req, res) => {
   try {
     const prompt = `Create ${numQuestions} ${difficultyLevel} level ${subject} questions for ${grade} grade students. ${instructions}`;
     
-    const response = await openai.chat.completions.create({
+    const response = await openai.createChatCompletion({
       model: "gpt-3.5-turbo",
       messages: [
         { role: "system", content: "You are a helpful educational content creator specializing in creating learning exercises." },
@@ -214,7 +214,7 @@ const generateExerciseWithAI = asyncHandler(async (req, res) => {
     });
     
     // Process the AI response
-    const generatedQuestions = response.choices[0].message.content.trim();
+    const generatedQuestions = response.data.choices[0].message.content.trim();
     
     res.status(200).json({
       success: true,

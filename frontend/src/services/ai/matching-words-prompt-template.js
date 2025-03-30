@@ -71,7 +71,10 @@ function generatePlaceholders(count, example) {
  * @returns {string} Formatted placeholders
  */
 function generateCorrectAnswerPlaceholders(count) {
-  return Array(count).fill(`    "Left Item": "Right Item"`).join(',\n    ');
+  // Create unique key names to avoid duplicate keys in the JSON template
+  return Array.from({ length: count }, (_, i) => 
+    `    "Left Item ${i+1}": "Right Item ${i+1}"`
+  ).join(',\n    ');
 }
 
 /**

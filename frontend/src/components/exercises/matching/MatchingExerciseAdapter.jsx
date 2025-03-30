@@ -118,7 +118,7 @@ const MatchingExerciseAdapter = ({
       <div className="exercise-header">
         <h3 className="exercise-question">{exercise.question}</h3>
         <div className="exercise-instructions">
-          Match the items from the left column with their corresponding items in the right column.
+          Select the correct match for each item from the dropdown menu.
         </div>
         <div className="exercise-score">{exercise.max_score} points</div>
       </div>
