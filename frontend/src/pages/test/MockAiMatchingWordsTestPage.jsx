@@ -10,7 +10,7 @@
  */
 
 import React, { useState, useCallback } from 'react';
-import './AiMatchingWordsTestPage.css';
+// CSS file has been migrated to Tailwind
 
 /**
  * Mock test page for AI-generated matching words exercises

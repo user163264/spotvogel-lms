@@ -55,12 +55,14 @@ export const aiService = {
    * @returns {Promise<Object>} - The generated exercise data
    */
   async generateExercise(topic, difficulty = 'medium', language = 'en') {
+    // Sanitize topic input to prevent prompt injection
+    const sanitizedTopic = this.sanitizeInput(topic);
     try {
       // Determine number of items based on difficulty
       const itemCount = difficulty === 'easy' ? 4 : difficulty === 'hard' ? 6 : 5;
       
-      // Generate the prompt using our template system
-      const prompt = generateMatchingWordsPrompt(topic, difficulty, itemCount, language);
+      // Generate the prompt using our template system with sanitized input
+      const prompt = generateMatchingWordsPrompt(sanitizedTopic, difficulty, itemCount, language);
       
       // Log the prompt in development mode
       if (process.env.NODE_ENV === 'development') {
@@ -130,6 +132,24 @@ export const aiService = {
         // Try to parse the JSON
         const exerciseData = JSON.parse(jsonString);
         
+        // Force a standardized question format regardless of what the AI returned
+        // This is the most secure approach to prevent any text injection
+        const standardizedQuestions = {
+          'en': 'Match each item with its correct counterpart.',
+          'nl': 'Verbind elk item met zijn juiste tegenhanger.',
+          'fr': 'Associez chaque élément à son homologue correct.'
+        };
+        
+        // Override with standardized question based on language
+        exerciseData.question = standardizedQuestions[language] || standardizedQuestions.en;
+        
+        console.log('Enforcing standardized question format for security');
+        
+        // Log if we detected attempted injection
+        if (sanitizedTopic.length > 5 && exerciseData.question.includes(sanitizedTopic)) {
+          console.warn('Prevented direct input insertion into exercise question');
+        }
+        
         // Validate the exercise data has the minimum required fields
         if (!exerciseData.word_bank || !exerciseData.match_options || !exerciseData.correct_answer) {
           console.error('Missing required fields in exercise data:', exerciseData);
@@ -150,5 +170,44 @@ export const aiService = {
       console.error('AI service error:', error);
       throw error;
     }
+  },
+
+  /**
+   * Sanitize user input to prevent prompt injection
+   * @param {string} input - The input to sanitize
+   * @returns {string} - The sanitized input
+   */
+  sanitizeInput(input) {
+    if (!input || typeof input !== 'string') {
+      return 'general topic';
+    }
+    
+    // Extract a more concise topic (first 40 chars max)
+    let sanitized = input.trim().slice(0, 40);
+    
+    // Remove any special characters that could lead to prompt injection
+    sanitized = sanitized.replace(/[\n\r]/g, ' ');
+    
+    // Replace any instructions or commands that might look like directives
+    sanitized = sanitized.replace(/^(create|make|generate|list|write|show|tell|give)/i, 'about');
+    
+    // Replace suspicious keywords that might try to change the prompt's intention
+    const suspiciousTerms = [
+      'prompt', 'instruction', 'forget', 'ignore', 'instead', 'system', 
+      'user input', 'original prompt', 'disregard', 'template'
+    ];
+    
+    for (const term of suspiciousTerms) {
+      sanitized = sanitized.replace(new RegExp(term, 'gi'), 'topic');
+    }
+    
+    // Ensure we still have something meaningful
+    if (sanitized.length < 3) {
+      return 'general topic';
+    }
+    
+    return sanitized;
   }
 };
+
+export default aiService;

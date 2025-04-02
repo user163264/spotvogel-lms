@@ -23,11 +23,14 @@ export function generateMatchingWordsPrompt(topic, difficulty = 'medium', itemCo
   // Select appropriate language templates
   const templates = languageTemplates[language] || languageTemplates.en;
   
-  // Construct the main prompt
+  // Safely encode the topic for insertion into the prompt
+  const safeTopic = encodeTopicSafely(topic);
+  
+  // Construct the main prompt - completely removing user input from template strings
   return `
 ${templates.instructions}
 
-${templates.context.replace('{topic}', topic)}
+YOUR TASK: Create a matching exercise about the following topic: "${safeTopic}"
 
 ${getDifficultyGuidance(difficulty, templates)}
 
@@ -35,7 +38,7 @@ ${templates.format}
 
 {
   "exercise_type": "matching_words",
-  "question": "${templates.questionTemplate.replace('{topic}', topic)}",
+  "question": "Match each item with its correct counterpart.",
   "word_bank": [
     ${generatePlaceholders(actualItemCount, templates.leftItemExample)}
   ],
@@ -51,7 +54,9 @@ ${templates.format}
 
 ${templates.requirements}
 
-${getTopicSpecificGuidance(topic)}
+${getTopicSpecificGuidance(safeTopic)}
+
+IMPORTANT: The exercise should be about "${safeTopic}" but DO NOT include this text directly in the question field. Use a generic question format.
 `;
 }
 
@@ -146,14 +151,36 @@ function getTopicSpecificGuidance(topic) {
 }
 
 /**
+ * Safely encode a topic for inclusion in a prompt
+ * @param {string} topic - Topic to encode safely
+ * @returns {string} - Safely encoded topic
+ */
+function encodeTopicSafely(topic) {
+  if (!topic || typeof topic !== 'string') {
+    return 'general knowledge';
+  }
+  
+  // Remove any characters that could break the prompt structure
+  let safe = topic.replace(/[\"\{\}\[\]\n\r]/g, ' ');
+  
+  // Replace sequences of multiple spaces with a single space
+  safe = safe.replace(/\s+/g, ' ').trim();
+  
+  // Escape any remaining special characters
+  safe = safe.replace(/([\\`*_{}\[\]()#+-.!])/g, '\\$1');
+  
+  return safe;
+}
+
+/**
  * Language-specific templates for prompts
  */
 const languageTemplates = {
   // English templates
   en: {
-    instructions: 'Create a matching exercise about the provided topic for an educational platform.',
-    context: 'The exercise should be about {topic} and should match related concepts, definitions, or examples.',
-    questionTemplate: 'Match each {topic} item with its correct counterpart.',
+    instructions: 'Create a matching exercise for an educational platform.',
+    context: 'The exercise should match related concepts, definitions, or examples about the provided topic.',
+    questionTemplate: 'Match each [TOPIC] item with its correct counterpart.',
     leftItemExample: 'Example left item',
     rightItemExample: 'Example right item',
     easyGuidance: 'Create an easy exercise with simple, direct matches that are obvious to someone with basic knowledge of the topic.',
@@ -165,9 +192,9 @@ const languageTemplates = {
   
   // Dutch templates
   nl: {
-    instructions: 'Maak een koppeloefeningsopdracht over het opgegeven onderwerp voor een educatief platform.',
-    context: 'De oefening moet gaan over {topic} en moet gerelateerde concepten, definities of voorbeelden koppelen.',
-    questionTemplate: 'Koppel elk {topic} item aan de juiste tegenhanger.',
+    instructions: 'Maak een koppeloefeningsopdracht voor een educatief platform.',
+    context: 'De oefening moet gerelateerde concepten, definities of voorbeelden koppelen over het opgegeven onderwerp.',
+    questionTemplate: 'Koppel elk [TOPIC] item aan de juiste tegenhanger.',
     leftItemExample: 'Voorbeeld links item',
     rightItemExample: 'Voorbeeld rechts item',
     easyGuidance: 'Maak een eenvoudige oefening met simpele, directe koppelingen die duidelijk zijn voor iemand met basiskennis van het onderwerp.',
@@ -179,9 +206,9 @@ const languageTemplates = {
   
   // French templates
   fr: {
-    instructions: 'Créez un exercice d\'association sur le sujet fourni pour une plateforme éducative.',
-    context: 'L\'exercice doit porter sur {topic} et doit associer des concepts, définitions ou exemples liés.',
-    questionTemplate: 'Associez chaque élément de {topic} à son homologue correct.',
+    instructions: 'Créez un exercice d\'association pour une plateforme éducative.',
+    context: 'L\'exercice doit associer des concepts, définitions ou exemples liés au sujet fourni.',
+    questionTemplate: 'Associez chaque élément de [TOPIC] à son homologue correct.',
     leftItemExample: 'Exemple d\'élément gauche',
     rightItemExample: 'Exemple d\'élément droit',
     easyGuidance: 'Créez un exercice facile avec des associations simples et directes, évidentes pour quelqu\'un ayant une connaissance de base du sujet.',

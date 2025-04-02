@@ -1,347 +1,222 @@
 /**
  * AI Matching Exercise Adapter
  * 
- * This component connects the OpenAI exercise generation service with
- * Finny's MatchingExercise UI component. It handles the generation of
- * matching exercises from lesson content and the transformation of data
- * between the AI service and UI component.
+ * This component adapts the AI-generated matching exercise data to the
+ * MatchingExercise component format.
  * 
- * Created by: Alex Ex (AI Exercise Generation Specialist)
- * Date: March 29, 2025
+ * Created by: Alex Ex
+ * Date: March 30, 2025
  */
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState } from 'react';
 import PropTypes from 'prop-types';
-import MatchingExerciseAdapter from './matching/MatchingExerciseAdapter';
-import { EXERCISE_TYPES, DIFFICULTY_LEVELS, SUPPORTED_LANGUAGES, FEATURES } from '../../config/config';
+import { Card, Button } from '../ui';
 
-// Debug mode from feature flags
-const DEBUG = FEATURES.DEBUG_MODE;
-
-/**
- * Logs debug information if debug mode is enabled
- * @param {string} label - Log label
- * @param {any} data - Data to log
- */
-const debugLog = (label, data) => {
-  if (DEBUG) {
-    console.group(`🔍 ${label}`);
-    if (data !== undefined) {
-      if (typeof data === 'object') {
-        console.log(JSON.stringify(data, null, 2));
-      } else {
-        console.log(data);
-      }
-    }
-    console.groupEnd();
-  }
-};
-
-// Import the AI service for exercise generation
-// This would be a real import in the actual implementation
-const generateMatchingExercise = async (lessonContent, options) => {
-  // In a production environment, this would make an API call to our backend
-  try {
-    debugLog('Generating matching exercise', { contentLength: lessonContent.length, options });
-    
-    // This would be a real API call in production
-    // const response = await fetch('/api/exercise/generate/matching', {
-    //   method: 'POST',
-    //   headers: {
-    //     'Content-Type': 'application/json',
-    //   },
-    //   body: JSON.stringify({ lessonContent, options }),
-    // });
-    // const data = await response.json();
-    
-    // For demo purposes, we'll simulate a response with art content from exercise.html
-    const simulatedExercise = {
-      exercise_type: EXERCISE_TYPES.MATCHING_WORDS,
-      question: "Koppel de schilder aan zijn beroemde werk.",
-      word_bank: ["Gustav Klimt", "James McNeill Whistler", "Claude Monet", "Salvador Dalí", "Vincent van Gogh"],
-      match_options: ["Waterlelies", "De Kus", "Whistler's Mother", "De Volharding der Herinnering", "Sterrennacht"],
-      correct_answer: {
-        "Gustav Klimt": "De Kus",
-        "James McNeill Whistler": "Whistler's Mother",
-        "Claude Monet": "Waterlelies",
-        "Salvador Dalí": "De Volharding der Herinnering",
-        "Vincent van Gogh": "Sterrennacht"
-      },
-      max_score: 5,
-      grading_type: "auto"
-    };
-    
-    // Simulate network delay
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    
-    debugLog('Exercise generated successfully', simulatedExercise);
-    
-    return {
-      success: true,
-      exercise: simulatedExercise
-    };
-  } catch (error) {
-    console.error('Error generating exercise:', error);
-    return {
-      success: false,
-      error: error.message
-    };
-  }
-};
-
-/**
- * AI Matching Exercise Adapter
- * @param {Object} props - Component props
- * @returns {JSX.Element} - Rendered component
- */
 const AIMatchingExerciseAdapter = ({
+  initialExercise,
   lessonContent,
-  exerciseOptions = {},
+  exerciseOptions,
   onExerciseCompleted,
-  onError,
-  initialExercise
+  onError
 }) => {
-  // State for the generated exercise
-  const [exercise, setExercise] = useState(null);
-  
-  // State for loading status
-  const [loading, setLoading] = useState(false);
-  
-  // State for errors
-  const [error, setError] = useState(null);
-  
-  // State for student answers
-  const [studentAnswers, setStudentAnswers] = useState({});
-  
-  // State for feedback
-  const [feedback, setFeedback] = useState(null);
-  
-  // State for submission status
-  const [submitted, setSubmitted] = useState(false);
-  
-  // State for showing correct answers
-  const [showCorrectAnswers, setShowCorrectAnswers] = useState(false);
-  
-  // Generate the exercise when the component mounts or when lessonContent changes
-  useEffect(() => {
-    if (initialExercise) {
-      // If an initialExercise is provided, use it
-      setExercise(initialExercise);
-      setLoading(false);
-    } else if (lessonContent) {
-      // Otherwise generate one from the content
-      generateExercise();
-    }
-  }, [lessonContent, initialExercise]);
-  
-  // Function to generate the exercise
-  const generateExercise = useCallback(async () => {
-    if (!lessonContent) {
-      setError('Lesson content is required to generate an exercise');
-      if (onError) onError('Lesson content is required to generate an exercise');
-      return;
-    }
-    
-    try {
-      setLoading(true);
-      setError(null);
-      
-      const defaultOptions = {
-        numberOfPairs: 5,
-        difficulty: 'medium',
-        language: 'nl'
-      };
-      
-      const result = await generateMatchingExercise(
-        lessonContent,
-        { ...defaultOptions, ...exerciseOptions }
-      );
-      
-      if (result.success) {
-        setExercise(result.exercise);
-      } else {
-        throw new Error(result.error || 'Failed to generate exercise');
-      }
-    } catch (err) {
-      setError(err.message);
-      if (onError) onError(err.message);
-    } finally {
-      setLoading(false);
-    }
-  }, [lessonContent, exerciseOptions, onError, initialExercise]);
-  
-  // Handle exercise submission
-  const handleSubmit = (submissionData) => {
-    debugLog('Exercise submitted', submissionData);
-    
-    setStudentAnswers(submissionData.answers);
-    setSubmitted(true);
-    
-    // Calculate the score
-    const totalPairs = Object.keys(exercise.correct_answer).length;
-    let correctCount = 0;
-    
-    for (const [item, selectedOption] of Object.entries(submissionData.answers)) {
-      if (exercise.correct_answer[item] === selectedOption) {
-        correctCount++;
-      }
-    }
-    
-    const score = correctCount;
-    const percentageScore = (correctCount / totalPairs) * 100;
-    
-    // Prepare feedback data
-    const correctMatches = [];
-    const incorrectMatches = [];
-    
-    for (const [item, selectedOption] of Object.entries(submissionData.answers)) {
-      const correctOption = exercise.correct_answer[item];
-      
-      if (selectedOption === correctOption) {
-        correctMatches.push({
-          item,
-          match: selectedOption
-        });
-      } else {
-        incorrectMatches.push({
-          item,
-          yourAnswer: selectedOption,
-          correctAnswer: correctOption
-        });
-      }
-    }
-    
-    const feedbackData = {
-      score,
-      maxScore: totalPairs,
-      percentageScore,
-      correctMatches,
-      incorrectMatches
-    };
-    
-    setFeedback(feedbackData);
-    
-    // Notify parent component
-    if (onExerciseCompleted) {
-      onExerciseCompleted({
-        exerciseId: exercise.exercise_id || 0,
-        score,
-        maxScore: totalPairs,
-        answers: submissionData.answers,
-        feedback: feedbackData
-      });
-    }
-  };
-  
-  // Handle showing correct answers
-  const handleShowCorrectAnswers = () => {
-    setShowCorrectAnswers(true);
-  };
-  
-  // Handle resetting the exercise
-  const handleReset = () => {
-    setStudentAnswers({});
-    setFeedback(null);
-    setSubmitted(false);
-    setShowCorrectAnswers(false);
-  };
-  
-  // If there's an error, show it
-  if (error) {
-    return (
-      <div className="error-container">
-        <h3>Error Generating Exercise</h3>
-        <p>{error}</p>
-        <button onClick={generateExercise}>Retry</button>
-      </div>
-    );
-  }
-  
-  // If loading, show a loading indicator
-  if (loading) {
-    return (
-      <div className="loading-container">
-        <h3>Generating Exercise...</h3>
-        <p>Using AI to create a matching exercise from the lesson content...</p>
-        <div className="loading-spinner"></div>
-      </div>
-    );
-  }
-  
-  // If no exercise has been generated yet, show a message
+  const [exercise] = useState(initialExercise || null);
+  const [userAnswers, setUserAnswers] = useState({});
+  const [isSubmitted, setIsSubmitted] = useState(false);
+  const [results, setResults] = useState(null);
+
+  // If no exercise is provided, show a loading or error state
   if (!exercise) {
     return (
-      <div className="no-exercise-container">
-        <h3>No Exercise Available</h3>
-        <p>Please provide lesson content to generate an exercise.</p>
+      <div className="p-6 bg-gray-100 rounded-lg text-center">
+        <p className="text-gray-600">No exercise data available.</p>
       </div>
     );
   }
-  
-  // Otherwise, render the exercise
+
+  // Handle answer selection
+  const handleAnswerSelect = (wordBankItem, matchOption) => {
+    setUserAnswers(prev => ({
+      ...prev,
+      [wordBankItem]: matchOption
+    }));
+  };
+
+  // Handle exercise submission
+  const handleSubmit = () => {
+    try {
+      // Calculate score
+      const correctAnswers = exercise.correct_answer || {};
+      const score = Object.entries(userAnswers).reduce((total, [item, answer]) => {
+        return total + (correctAnswers[item] === answer ? 1 : 0);
+      }, 0);
+      
+      // Generate feedback
+      const correctMatches = Object.entries(userAnswers)
+        .filter(([item, answer]) => correctAnswers[item] === answer)
+        .map(([item, answer]) => ({ item, answer }));
+      
+      const incorrectMatches = Object.entries(userAnswers)
+        .filter(([item, answer]) => correctAnswers[item] !== answer)
+        .map(([item, answer]) => ({ 
+          item, 
+          userAnswer: answer, 
+          correctAnswer: correctAnswers[item] 
+        }));
+      
+      // Create result object
+      const result = {
+        score,
+        maxScore: exercise.word_bank.length,
+        percentage: (score / exercise.word_bank.length) * 100,
+        userAnswers,
+        correctAnswers,
+        feedback: {
+          correctMatches,
+          incorrectMatches
+        }
+      };
+      
+      // Set results and mark as submitted
+      setResults(result);
+      setIsSubmitted(true);
+      
+      // Call the callback
+      if (onExerciseCompleted) {
+        onExerciseCompleted(result);
+      }
+    } catch (error) {
+      console.error('Error submitting exercise:', error);
+      if (onError) {
+        onError('Failed to process exercise submission');
+      }
+    }
+  };
+
+  // Render the matching exercise
   return (
-    <div className="ai-matching-exercise-container">
-      <div className="exercise-info">
-        <p className="ai-generated-label">AI Generated Exercise</p>
-      </div>
-      
-      <MatchingExerciseAdapter
-        exercise={exercise}
-        onSubmit={handleSubmit}
-        readOnly={false}
-        studentAnswers={studentAnswers}
-        showCorrectAnswers={showCorrectAnswers}
-        feedbackData={feedback}
-      />
-      
-      {submitted && !showCorrectAnswers && (
-        <div className="post-submission-actions">
-          <button 
-            className="btn btn-show-answers" 
-            onClick={handleShowCorrectAnswers}
-          >
-            Show Correct Answers
-          </button>
-          <button 
-            className="btn btn-try-again" 
-            onClick={handleReset}
-          >
-            Try Again
-          </button>
-        </div>
-      )}
-      
-      {DEBUG && (
-        <div className="debug-info">
-          <h4>AI Adapter Debug Info</h4>
-          <details>
-            <summary>Exercise Data</summary>
-            <pre>{JSON.stringify(exercise, null, 2)}</pre>
-          </details>
-          <details>
-            <summary>Student Answers</summary>
-            <pre>{JSON.stringify(studentAnswers, null, 2)}</pre>
-          </details>
-          <details>
-            <summary>Feedback</summary>
-            <pre>{JSON.stringify(feedback, null, 2)}</pre>
-          </details>
-        </div>
-      )}
+    <div className="w-full">
+      <Card className="mb-6">
+        <Card.Header>
+          <h3 className="text-xl font-medium">{exercise.question}</h3>
+        </Card.Header>
+        <Card.Body>
+          <div className="p-4">
+            <div className="flex flex-col md:flex-row md:space-x-8">
+              {/* Word bank column */}
+              <div className="flex-1 mb-6 md:mb-0">
+                <h4 className="font-medium mb-3 text-neutral-700">Items</h4>
+                <div className="space-y-2">
+                  {exercise.word_bank.map((item, index) => (
+                    <div 
+                      key={`word-${index}`}
+                      className={`p-3 rounded-md border ${
+                        isSubmitted 
+                          ? userAnswers[item] === exercise.correct_answer[item]
+                            ? 'bg-green-50 border-green-200'
+                            : 'bg-red-50 border-red-200'
+                          : 'bg-white border-gray-200 hover:border-primary'
+                      }`}
+                    >
+                      <div className="flex items-start">
+                        <span className="w-6 h-6 flex items-center justify-center rounded-full bg-neutral-100 text-neutral-600 text-sm mr-2">
+                          {index + 1}
+                        </span>
+                        <div className="flex-1">
+                          <p>{item}</p>
+                          {isSubmitted && userAnswers[item] !== exercise.correct_answer[item] && (
+                            <p className="text-sm text-red-500 mt-1">
+                              Correct match: {exercise.correct_answer[item]}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Matching options column */}
+              <div className="flex-1">
+                <h4 className="font-medium mb-3 text-neutral-700">Match With</h4>
+                <div className="space-y-2">
+                  {exercise.match_options.map((option, index) => (
+                    <div 
+                      key={`option-${index}`}
+                      className="p-3 rounded-md border border-gray-200 bg-white"
+                    >
+                      <div className="flex items-start">
+                        <span className="w-6 h-6 flex items-center justify-center rounded-full bg-neutral-100 text-neutral-600 text-sm mr-2">
+                          {String.fromCharCode(65 + index)}
+                        </span>
+                        <p>{option}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Matching interface */}
+            <div className="mt-8 pt-6 border-t border-gray-200">
+              <h4 className="font-medium mb-4 text-neutral-700">Your Answers</h4>
+              <div className="space-y-3">
+                {exercise.word_bank.map((item, index) => (
+                  <div key={`answer-${index}`} className="flex items-center space-x-4">
+                    <div className="w-1/2 p-2 border border-gray-200 rounded bg-gray-50">
+                      {item}
+                    </div>
+                    <div className="text-neutral-500">→</div>
+                    <select
+                      value={userAnswers[item] || ''}
+                      onChange={(e) => handleAnswerSelect(item, e.target.value)}
+                      disabled={isSubmitted}
+                      className="w-1/2 p-2 border border-gray-200 rounded focus:outline-none focus:ring-2 focus:ring-primary/30"
+                    >
+                      <option value="">-- Select match --</option>
+                      {exercise.match_options.map((option, optIndex) => (
+                        <option key={`sel-${optIndex}`} value={option}>
+                          {String.fromCharCode(65 + optIndex)}. {option}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </Card.Body>
+        <Card.Footer>
+          <div className="flex justify-end">
+            {!isSubmitted ? (
+              <Button 
+                onClick={handleSubmit}
+                disabled={Object.keys(userAnswers).length !== exercise.word_bank.length}
+              >
+                Submit Answers
+              </Button>
+            ) : (
+              <div className="text-right">
+                <div className="text-lg font-medium mb-1">
+                  Score: {results.score}/{results.maxScore} ({results.percentage.toFixed(0)}%)
+                </div>
+                <div className="text-sm text-neutral-600">
+                  {results.feedback.correctMatches.length} correct, {results.feedback.incorrectMatches.length} incorrect
+                </div>
+              </div>
+            )}
+          </div>
+        </Card.Footer>
+      </Card>
     </div>
   );
 };
 
 AIMatchingExerciseAdapter.propTypes = {
-  lessonContent: PropTypes.string.isRequired,
-  exerciseOptions: PropTypes.shape({
-    numberOfPairs: PropTypes.number,
-    difficulty: PropTypes.oneOf(DIFFICULTY_LEVELS.map(level => level.value)),
-    language: PropTypes.oneOf(SUPPORTED_LANGUAGES.map(lang => lang.value))
-  }),
+  initialExercise: PropTypes.object,
+  lessonContent: PropTypes.string,
+  exerciseOptions: PropTypes.object,
   onExerciseCompleted: PropTypes.func,
-  onError: PropTypes.func,
-  initialExercise: PropTypes.object // Add support for directly passing an exercise
+  onError: PropTypes.func
 };
 
 export default AIMatchingExerciseAdapter;
