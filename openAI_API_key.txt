@@ -1,4 +1,1 @@
-# This file should NOT be committed to version control
-# Use environment variables (.env files) instead
-# Example of how to use in .env file:
-# OPENAI_API_KEY=your_key_here
+REPLACE_WITH_YOUR_OPENAI_API_KEY
