@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import MatchingWords from './improved/MatchingWordsOptimized'; // Import our optimized component
+import FillInBlankExerciseSimple from './fill-in-blank/FillInBlankExerciseSimple'; // Import our Fill-in-the-Blank component
 import { useNavigate } from 'react-router-dom';
 import aiService from '../../services/aiService';
 
@@ -336,20 +337,46 @@ const renderExercisePreview = (exercise, exerciseType) => {
       );
       
     case 'fill-in-the-blank':
-      return (
-        <div className="fill-in-blank-preview">
-          <p><strong>Instructions:</strong> Fill in the blanks with the correct answers.</p>
-          <p>{exercise.text || 'No text provided'}</p>
-          <div className="answers">
-            <p><strong>Answers:</strong></p>
-            <ol>
-              {Array.isArray(exercise.answers) ? exercise.answers.map((answer, idx) => (
-                <li key={idx}>{answer}</li>
-              )) : <li>No answers provided</li>}
-            </ol>
-          </div>
-        </div>
-      );
+      // Transform the exercise data to match our component's expected format if needed
+      const transformedExercise = {
+        instructions: exercise.instructions || 'Fill in the blanks with the correct answers.',
+        passage: exercise.text || exercise.passage || '',
+        blanks: []
+      };
+      
+      // Handle different possible data formats
+      if (Array.isArray(exercise.answers) && exercise.text) {
+        // Create blanks from the answers array
+        const blankRegex = /\{\{blank\}\}/g;
+        const blankMatches = [...exercise.text.matchAll(blankRegex)];
+        
+        blankMatches.forEach((match, idx) => {
+          if (idx < exercise.answers.length) {
+            transformedExercise.blanks.push({
+              id: String(idx + 1),
+              acceptedAnswers: [exercise.answers[idx]]
+            });
+          }
+        });
+        
+        // Replace {{blank}} with {{blank:id:answer}} format
+        transformedExercise.passage = exercise.text.replace(
+          blankRegex,
+          (match, offset) => {
+            const matchIndex = blankMatches.findIndex(m => m.index === offset);
+            if (matchIndex !== -1 && matchIndex < exercise.answers.length) {
+              return `{{blank:${matchIndex + 1}:${exercise.answers[matchIndex]}}}`;
+            }
+            return match;
+          }
+        );
+      } else if (exercise.blanks) {
+        // If the exercise already has blanks property, use it
+        transformedExercise.blanks = exercise.blanks;
+      }
+      
+      return <FillInBlankExerciseSimple exercise={transformedExercise} />;
+      
       
     case 'matching':
       // Convert legacy format to new format if needed

@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Exercise Tester Preview</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f5f7fa;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    .header {
+      background-color: #2563eb;
+      color: white;
+      padding: 15px 20px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .header h1 {
+      margin: 0;
+      font-size: 1.5rem;
+    }
+    .content {
+      margin-top: 20px;
+    }
+    .preview-message {
+      background-color: #fff;
+      border: 1px solid #e5e7eb;
+      border-radius: 6px;
+      padding: 20px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+    .preview-message h2 {
+      color: #2563eb;
+      margin-top: 0;
+    }
+    .preview-code {
+      background-color: #f3f4f6;
+      padding: 15px;
+      border-radius: 6px;
+      overflow-x: auto;
+      margin-top: 20px;
+    }
+    .instructions {
+      margin-top: 20px;
+      line-height: 1.6;
+    }
+    .instructions ol {
+      padding-left: 20px;
+    }
+    .back-link {
+      display: inline-block;
+      margin-top: 20px;
+      color: #2563eb;
+      text-decoration: none;
+    }
+    .back-link:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>Exercise Tester Preview</h1>
+  </div>
+  <div class="container">
+    <div class="content">
+      <div class="preview-message">
+        <h2>Development Server Not Running</h2>
+        <p>The React development server is not running correctly. Here's the component we're trying to view:</p>
+        
+        <div class="preview-code">
+          <pre><code>
+// ExerciseTester.jsx
+// A split-screen testing environment for exercise components
+// Left side: Teacher input and controls
+// Right side: Exercise preview with debug information
+
+import React, { useState } from 'react';
+
+const ExerciseTester = () => {
+  const [exerciseType, setExerciseType] = useState('multiple_choice');
+  const [inputText, setInputText] = useState('');
+  const [responseData, setResponseData] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+  
+  // ... component implementation
+};
+
+export default ExerciseTester;
+          </code></pre>
+        </div>
+      </div>
+      
+      <div class="instructions">
+        <h3>Troubleshooting Instructions:</h3>
+        <ol>
+          <li>Make sure all dependencies are installed by running <code>npm install</code> in the frontend directory</li>
+          <li>Try installing react-scripts directly with <code>npm install react-scripts</code></li>
+          <li>Check if there are any errors in the node_modules directory</li>
+          <li>Try using npx to run the script: <code>npx react-scripts start</code></li>
+          <li>If using a different package manager like yarn, try <code>yarn start</code> instead</li>
+        </ol>
+        
+        <p>The Exercise Tester component has been successfully created and will be available once we resolve the development server issue.</p>
+      </div>
+      
+      <a href="javascript:history.back()" class="back-link">← Go Back</a>
+    </div>
+  </div>
+</body>
+</html>

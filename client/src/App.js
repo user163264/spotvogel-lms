@@ -25,10 +25,15 @@ import SubmissionView from './pages/submissions/SubmissionView';
 import Profile from './pages/Profile';
 import NotFound from './pages/NotFound';
 import ApiTester from './components/debug/ApiTester';
+import ApiTesterFillInBlank from './components/debug/ApiTesterFillInBlank';
 
 // Import our test pages
 import MatchingWordsTestPage from './pages/test/MatchingWordsTestPage';
 import MatchingWordsOptimizedTestPage from './pages/test/MatchingWordsOptimizedTestPage';
+import ExerciseTestingPage from './pages/ExerciseTestingPage';
+import FillInBlankTestPage from './pages/test/FillInBlankTestPage';
+import FillInBlankGenerator from './pages/exercises/FillInBlankGenerator';
+import FillInBlankTesterPage from './pages/test/FillInBlankTesterPage';
 
 // CSS
 import './App.css';
@@ -139,21 +144,29 @@ function App() {
               </ProtectedRoute>
             } />
             
-            {/* AI Exercise Generation */}
+            {/* Exercise Generator Routes */}
             <Route path="/exercises/generate" element={
               <ProtectedRoute allowedRoles={['teacher', 'admin']}>
                 <ExerciseGenerator />
               </ProtectedRoute>
             } />
             
-            {/* Debug Route */}
-            <Route path="/debug" element={
-              <ApiTester />
+            <Route path="/exercises/fill-in-blank-generator" element={
+              <FillInBlankGenerator />
             } />
             
-            {/* Test Routes for MatchingWords Component */}
+            {/* Debug Routes */}
+            <Route path="/debug" element={<ApiTester />} />
+            <Route path="/debug/fill-in-blank" element={<ApiTesterFillInBlank />} />
+            
+            {/* Test Routes for Components */}
             <Route path="/test/matching-words" element={<MatchingWordsOptimizedTestPage />} />
             <Route path="/test/matching-words-original" element={<MatchingWordsTestPage />} />
+            <Route path="/test/fill-in-blank" element={<FillInBlankTestPage />} />
+            <Route path="/test/fill-in-blank-tester" element={<FillInBlankTesterPage />} />
+            
+            {/* Exercise Tester Route */}
+            <Route path="/test/exercise-tester" element={<ExerciseTestingPage />} />
             
             {/* 404 Route */}
             <Route path="*" element={<NotFound />} />
